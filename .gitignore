@@ -1,0 +1,7 @@
+.ai/
+_builds/
+vendor/
+vendor-wordpress/
+composer.phar
+composer.lock
+.DS_Store

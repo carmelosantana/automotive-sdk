@@ -1,0 +1,43 @@
+{
+    "name": "carmelosantana/vin-importer",
+    "version": "0.1.0",
+    "description": "Import vehicles from various sources.",
+    "type": "wordpress-plugin",
+    "license": "GNU General Public License v2",
+    "authors": [
+        {
+            "name": "Carmelo Santana",
+            "email": "me@carmelosantana.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "CarmeloSantana\\VinImporter\\": "src/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/carmelosantana/wp-options"
+        }
+    ],    
+    "require": {
+        "php": "^8.1",
+        "composer/installers": "^2.2",
+        "carmelosantana/wp-options": "dev-main",
+        "brick/money": "^0.9.0",
+        "mustache/mustache": "^2.14"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    },
+    "require-dev": {
+        "carmelosantana/ai-context-builder": "^1.1"
+    },
+    "scripts": {
+        "ai": "CarmeloSantana\\AiContextBuilder\\ContextBuilder::generateContext",
+        "test": "pest tests/"
+    }
+}
