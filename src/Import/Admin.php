@@ -10,28 +10,71 @@ class Admin
 {
     public $actions_separator = ' • ';
 
-    private $file;
-
     private $file_data;
 
     private $file_header;
 
     private $file_header_hash;
 
-    private $files;
+    private $library;
 
     private $template;
+
+    private $Files;
 
     public function __construct()
     {
         add_action('admin_menu', [$this, 'adminMenu']);
+        add_action('wp_ajax_get_vehicle_count', [$this, 'adminVehicleCountAjax']);
+        add_action('wp_ajax_nopriv_get_vehicle_count', [$this, 'adminVehicleCountAjax']); // for non-logged-in users
+        add_action('admin_enqueue_scripts', [$this, 'adminEnqueue']);
+        add_action('admin_footer', [$this, 'adminInlineJs']);
+
         add_filter('upload_mimes', [$this, 'allowUploadMimes']);
+
+        $this->Files = new Files();
+    }
+
+    // enque scripts and styles
+    public function adminEnqueue()
+    {
+        wp_enqueue_script('vin-importer-admin', VIN_IMPORTER_DIR_URL . 'assets/vin-importer.js', ['jquery'], null, true);
+    }
+
+    // output inline js
+    public function adminInlineJs()
+    {
+?>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                // Perform the AJAX request on page load
+                fetchVehicleCount();
+            });
+
+            function fetchVehicleCount() {
+                var ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
+
+                // Send the AJAX request
+                fetch(ajaxUrl + "?action=get_vehicle_count")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Display the count in the placeholder
+                            document.getElementById('vehicle-count').innerHTML = '🟢 Vehicle Count: ' + data.count;
+                        } else {
+                            document.getElementById('vehicle-count').innerHTML = '⚠️ Error fetching vehicle count';
+                        }
+                    });
+            }
+        </script>
+<?php
     }
 
     public function adminMenu()
     {
         add_submenu_page(
-            'tools.php',
+            // add to custom vehicle post type
+            'edit.php?post_type=vehicle',
             VIN_IMPORTER_TITLE,
             VIN_IMPORTER_TITLE,
             'manage_options',
@@ -69,10 +112,6 @@ class Admin
                 $this->adminVehiclesDelete();
                 break;
 
-            case 'alpaca-header':
-                $this->adminAlpacaBotHeader();
-                break;
-
             case 'import':
                 // disable post meta cache during import
                 wp_suspend_cache_addition(true);
@@ -91,6 +130,23 @@ class Admin
         echo '</pre>';
 
         echo '</div>';
+    }
+
+    /**
+     * Outputs the count of vehicles via AJAX.
+     *
+     * @return void
+     */
+    public function adminVehicleCountAjax(): void
+    {
+        // Retrieve the count of all vehicles
+        $vehicle_count = count(get_posts(['post_type' => 'vehicle', 'posts_per_page' => -1]));
+
+        // Return the result as a JSON response
+        wp_send_json([
+            'status' => 'success',
+            'count' => $vehicle_count
+        ]);
     }
 
     public function adminActionsList()
@@ -112,69 +168,6 @@ class Admin
         echo $out;
     }
 
-    public function adminAlpacaBotHeader()
-    {
-        if (class_exists('\AlpacaBot\Api\Ollama') and isset($_GET['action']) and $_GET['action'] === 'alpaca-header') {
-            $fields = Vehicle::fields();
-            $fields = array_map(function ($field) {
-                return $field['name'];
-            }, $fields);
-            $fields = implode(',', $fields);
-
-            $example = '
-                "address.addr1" => "address_addr1",
-                "address.city" => "address_city",
-                "address.region" => "address_region",
-                "address.country" => "address_country",
-                "body_style" => "body_style",
-                "Dealer ID" => "dealer_id",
-                "Dealer Postal Code" => "dealer_postal_code",
-                "drivetrain" => "drivetrain",
-                "exterior_color" => "exterior_color",
-                "fuel_type" => "fuel_type",
-                "image[0].url" => "image_0_url",
-                "image[0].tag[0]" => "image_0_tag_0",
-                "make" => "make",
-                "mileage.value" => "mileage_value",
-                "mileage.unit" => "mileage_unit",
-                "model" => "model",
-                "price" => "price",
-                "sale_price" => "sale_price",
-                "transmission" => "transmission",
-                "state_of_vehicle" => "state_of_vehicle",
-                "trim" => "trim",
-                "url" => "url",
-                "vin" => "vin",
-                "year" => "year"';
-            $system = "You normalize a user provided CSV header by changing to lower case and using underscores. Next to match our existing fields;";
-            $system .= $fields;
-            // $system .= "If you can't find a match just add the normalized field.";
-            $system .= "You must use all fields in the header row exactly as they appear.";
-            $system .= "Output only the PHP array, no supporting code, or comments.";
-            $system .= "Format array Old Key => new_key";
-            // $system .= "You can use the following fields; ";
-            // $system .= 'Here is an example of user values converted to our database fields; ' . $example;
-
-            // Build args for Ollama
-            $args = [
-                'prompt' => implode(',', $file_data[0]),
-                'system' => $system,
-                // 'model' => 'codellama',
-                // 'model' => 'codellama:13b',
-                'model' => 'llama3.1',
-            ];
-            $llm_header = (new \AlpacaBot\Api\Ollama)->apiGenerate($args);
-
-            echo '<div style="padding-top: 1rem;padding-bottom: 1rem;">';
-            echo '<strong>Alpaca Generated Header</strong>';
-            echo '</div>';
-
-            echo '<textarea style="width: 100%; height: 18rem; padding-bottom: 1rem;" disabled>';
-            echo $llm_header;
-            echo '</textarea>';
-        }
-    }
-
     /**
      * Check if file exists, get file info, get header row, get template match.
      * Sets $file, $file_header, $template
@@ -192,7 +185,7 @@ class Admin
         echo '<a href="' . admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&file=' . $_GET['file'] . '&action=import') . '" class="button-primary">Import</a>';
 
         $file = $_GET['file'] ?? null;
-        $file_path = $this->files[$file];
+        $file_path = $this->library[$file];
         $file_info = pathinfo($file_path);
 
         if (!file_exists($file_path)) {
@@ -201,7 +194,7 @@ class Admin
         }
 
         // get file info
-        $this->file_data = $this->fileGetData($file_path);
+        $this->file_data = $this->Files->getData($file_path);
         $file_size = size_format(filesize($file_path), 2);
         $file_date = date('Y-m-d H:i:s', filemtime($file_path));
 
@@ -291,13 +284,13 @@ class Admin
 
     public function adminFilesGetHeaders()
     {
-        if (!isset($this->files)) {
-            $this->files = $this->filesGetAll();
+        if (!isset($this->library)) {
+            $this->library = $this->Files->getAll();
         }
 
         // output first row of all files
-        foreach ($this->files as $key => $file) {
-            $file_path = $this->files[$key];
+        foreach ($this->library as $key => $file) {
+            $file_path = $this->library[$key];
             $file_handle = fopen($file_path, 'r');
             $file_data = fgetcsv($file_handle);
             fclose($file_handle);
@@ -313,7 +306,7 @@ class Admin
     public function adminFilesRefresh()
     {
         delete_transient('vin_importer_files');
-        $files = $this->filesRefresh();
+        $this->library = $this->Files->refresh();
         $this->adminNotice('Files refreshed.', 'notice-success');
     }
 
@@ -326,9 +319,9 @@ class Admin
 
     public function adminPossibleFileList()
     {
-        $this->files = $this->filesGetAll();
+        $this->library = $this->Files->getAll();
 
-        echo '<p>' . (count($this->files) === 0 ? '🟨' : '🟩') . ' Files Found: ' . count($this->files) . '</p>';
+        echo '<p>' . (count($this->library) === 0 ? '🟡' : '🟢') . ' Files Found: ' . count($this->library) . '</p>';
 
         echo '<table class="wp-list-table widefat fixed striped">';
 
@@ -339,7 +332,7 @@ class Admin
         echo '<th style="width: 100px;">Action</th>';
         echo '</tr>';
 
-        foreach ($this->files as $key => $file) {
+        foreach ($this->library as $key => $file) {
             $file_info = pathinfo($file);
             $file_size = size_format(filesize($file), 2);
             $file_date = date('Y-m-d H:i:s', filemtime($file));
@@ -360,8 +353,10 @@ class Admin
 
     public function adminVehicleCount()
     {
-        $vehicle_count = count(get_posts(['post_type' => 'vehicle', 'posts_per_page' => -1]));
-        echo '<p>' . ($vehicle_count === 0 ? '🟨' : '🟩') . ' Vehicle Count: ' . $vehicle_count . '</p>';
+        // $vehicle_count = count(get_posts(['post_type' => 'vehicle', 'posts_per_page' => -1]));
+        // echo '<p>' . ($vehicle_count === 0 ? '🟨' : '🟩') . ' Vehicle Count: ' . $vehicle_count . '</p>';
+        echo '<div id="vehicle-count"></div>'; // Placeholder for the AJAX result
+
     }
 
     public function adminVehiclesDelete()
@@ -391,41 +386,6 @@ class Admin
         $mimes['xml'] = 'application/xml';
 
         return $mimes;
-    }
-
-    public function fileGetData($file_path)
-    {
-        if (!file_exists($file_path)) {
-            return false;
-        }
-
-        $file_handle = fopen($file_path, 'r');
-
-        $file_data = [];
-
-        while (($data = fgetcsv($file_handle)) !== false) {
-            $file_data[] = $data;
-        }
-
-        // header row, md5 hash of header row
-        $this->file_header = $file_data[0];
-        $this->file_header_hash = md5(implode(',', $this->file_header));
-
-        fclose($file_handle);
-
-        return $file_data;
-    }
-
-    public function fileGetPath($file)
-    {
-        $files = $this->filesRefresh();
-        $file_path = $files[$file];
-
-        if (!file_exists($file_path)) {
-            return false;
-        }
-
-        return $file_path;
     }
 
     public function fileImport()
@@ -490,35 +450,5 @@ class Admin
                 'added' => count($vehicles_added),
                 'updated' => count($vehicles_updated),
             ];
-    }
-
-    public function filesGetAll()
-    {
-        // save files to transient for 5 minutes
-        $files = get_transient('vin_importer_files');
-        if ($files === false) {
-            $files = $this->filesRefresh();
-            set_transient('vin_importer_files', $files, 300);
-        }
-        return $files;
-    }
-
-    public function filesRefresh()
-    {
-        // check if we have any csv, tsv, or json files in the uploads directory, traverse all subdirectories
-        $files = [];
-        $dirs = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(ABSPATH . 'wp-content/uploads'));
-        foreach ($dirs as $dir) {
-            if ($dir->isDir()) {
-                continue;
-            }
-
-            if (in_array($dir->getExtension(), ['csv', 'tsv', 'json'])) {
-                // store file in array with full path via md5 as key
-                $files[md5($dir->getPathname())] = $dir->getPathname();
-            }
-        }
-
-        return $files;
     }
 }
