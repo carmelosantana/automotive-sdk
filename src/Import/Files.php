@@ -17,7 +17,18 @@ class Files
         return $files;
     }
 
-    public function getData($file_path)
+    /**
+     * Get paginated data from the CSV file.
+     *
+     * @param string $file_path Path to the file.
+     * @param string $delimiter Delimiter used in the CSV file. Default is ','.
+     * @param int $page The page number to retrieve (1-based).
+     * @param int $limit Number of rows to retrieve per page.
+     * @param bool $header Whether the first row is a header row.
+     *
+     * @return array|false Paginated data or false on failure.
+     */
+    public function getData(string $file_path, string $delimiter = ',', int $page = 0, int $limit = 10, $header = true)
     {
         if (!file_exists($file_path)) {
             return false;
@@ -27,13 +38,44 @@ class Files
 
         $file_data = [];
 
-        while (($data = fgetcsv($file_handle)) !== false) {
-            $file_data[] = $data;
-        }
+        if ($page > 0) {
+            // Ensure that the page and limit parameters are valid
+            $page = max(1, $page);
+            $limit = max(1, $limit);
 
-        // header row, md5 hash of header row
-        $this->file_header = $file_data[0];
-        $this->file_header_hash = md5(implode(',', $this->file_header));
+            $current_row = 0;  // Keep track of the current row
+            $start_row = ($page - 1) * $limit;  // The first row of the page
+
+            if ($header) {
+                // Skip the header row
+                $file_header = fgetcsv($file_handle, 0, $delimiter);
+                $file_data[] = $file_header;
+            }
+
+            // Skip rows before the start of the page
+            while ($current_row < $start_row && fgetcsv($file_handle, 0, $delimiter) !== false) {
+                $current_row++;
+            }
+
+            // Read only the rows for the current page
+            while (($data = fgetcsv($file_handle, 0, $delimiter)) !== false) {
+                if ($current_row >= $start_row && $current_row < $start_row + $limit) {
+                    $file_data[] = $data;
+                }
+                $current_row++;
+
+                // Stop reading if we've reached the end of the page
+                if (count($file_data) >= $limit) {
+                    break;
+                }
+            }
+        } else {
+
+            // Read all rows
+            while (($data = fgetcsv($file_handle, 0, $delimiter)) !== false) {
+                $file_data[] = $data;
+            }
+        }
 
         fclose($file_handle);
 
