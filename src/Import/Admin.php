@@ -18,6 +18,8 @@ class Admin
 
     private $library;
 
+    private $page_slug = 'edit.php?post_type=vehicle';
+
     private $template;
 
     private $Files;
@@ -73,8 +75,7 @@ class Admin
     public function adminMenu()
     {
         add_submenu_page(
-            // add to custom vehicle post type
-            'edit.php?post_type=vehicle',
+            $this->page_slug,
             VIN_IMPORTER_TITLE,
             VIN_IMPORTER_TITLE,
             'manage_options',
