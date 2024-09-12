@@ -94,6 +94,22 @@ class Files
         return $file_path;
     }
 
+    public function getPathInfo($file)
+    {
+        $file = $_GET['file'] ?? null;
+        $files = $this->refresh();
+
+        $file_path = $files[$file];
+        $file_info = pathinfo($file_path);
+
+        if (!file_exists($file_path)) {
+            echo '✘ File does not exist.';
+            return false;
+        }
+
+        return $file_info;
+    }
+
     public function refresh()
     {
         // check if we have any csv, tsv, or json files in the uploads directory, traverse all subdirectories
