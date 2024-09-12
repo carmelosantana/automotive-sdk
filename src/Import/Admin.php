@@ -196,6 +196,11 @@ class Admin
 
         // get file info
         $this->file_data = $this->Files->getData($file_path);
+
+        // header row, md5 hash of header row
+        $this->file_header = $this->file_data[0];
+        $this->file_header_hash = md5(implode(',', $this->file_header));
+
         $file_size = size_format(filesize($file_path), 2);
         $file_date = date('Y-m-d H:i:s', filemtime($file_path));
 
