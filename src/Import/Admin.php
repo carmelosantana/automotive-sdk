@@ -104,10 +104,6 @@ class Admin
 
         $this->adminFileCheck();
 
-        $this->adminFileInfo();
-
-        echo '<pre>';
-
         switch ($_GET['action'] ?? null) {
             case 'delete_all_vehicles':
                 $this->adminVehiclesDelete();
@@ -126,11 +122,109 @@ class Admin
             case 'get_all_headers':
                 $this->adminFilesGetHeaders();
                 break;
+
+            case 'template':
+                $this->adminFileInfo();
+                break;
+
+            case 'view':
+                $this->adminFileView();
+                break;
         }
 
-        echo '</pre>';
-
         echo '</div>';
+    }
+
+    /**
+     * Display a paginated view of a CSV file.
+     * Fetches and displays the CSV data in a paginated table format.
+     *
+     * @return void
+     */
+    public function adminFileView(): void
+    {
+        // Get file path from the request
+        $file_path = $this->Files->getPath($_GET['file']);
+
+        if (!$file_path) {
+            echo '<p>File not found.</p>';
+            return;
+        }
+
+        // Define pagination variables
+        $per_page = 10;  // Rows per page
+        $current_page = max(0, isset($_GET['paged']) ? (int)$_GET['paged'] : 1);  // Current page number
+
+        // Get paginated file data
+        $file_data = $this->Files->getData($file_path, ',', $current_page, $per_page);
+        if (!$file_data) {
+            echo '<p>Error reading the file.</p>';
+            return;
+        }
+
+        // Retrieve total rows and calculate total pages
+        $total_items = count($this->Files->getData($file_path));  // Get the full data to calculate total rows
+        // Remove 1 for header row
+        $total_items--;
+
+        $total_pages = ceil($total_items / $per_page);
+
+        // Output the table headers
+        $file_header = $file_data[0];
+
+        // output file name as h3
+        $file_info = pathinfo($file_path);
+        echo '<h3>' . $file_info['basename'] . '</h3>';
+        // echo '<table class="wp-list-table widefat fixed striped">';
+        // echo '<table class="wp-list-table widefat fixed striped" style="width: 100%;">';
+        // echo '<table class="wp-list-table widefat fixed striped" style="width: auto;">';
+        // table header should sticky on scroll
+        echo '<table class="wp-list-table widefat fixed striped" style="width: auto; position: sticky; top: 2em;">';
+
+        echo '<style>';
+        echo 'table.wp-list-table thead th { position: sticky; top: 2em; background: #fff; z-index: 1; }';
+        echo '</style>';
+        echo '<thead><tr>';
+
+        // limit to first 10 columns
+        // $file_header = array_slice($file_header, 0, 10);
+
+        foreach ($file_header as $header) {
+            echo '<th>' . esc_html($header) . '</th>';
+        }
+        echo '</tr></thead><tbody>';
+
+        // Output the paginated rows
+        foreach (array_slice($file_data, 1) as $row) {
+            echo '<tr>';
+
+            // limit to first 10 columns
+            // $row = array_slice($row, 0, 10);
+
+            foreach ($row as $cell) {
+                // trim cell to 150 characters
+                $cell = substr($cell, 0, 150);
+                echo '<td>' . esc_html($cell) . '</td>';
+            }
+            echo '</tr>';
+        }
+        echo '</tbody></table>';
+
+        if ($total_items === (count($file_data) - 1)) {
+            echo '<p>Total: ' . esc_html($total_items) . '</p>';
+        } else {
+            echo '<p>✔︎ Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
+            echo paginate_links([
+                // 'base' => admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&action=view&file=' . $_GET['file'] . '&paged=%#%'),
+                'base' => admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=view&file=' . $_GET['file'] . '&paged=%#%'),
+                'format' => '&paged=%#%',
+                'current' => $current_page,
+                'total' => $total_pages,
+                // 'prev_text' => __('« Previous'),
+                // 'next_text' => __('Next »'),
+            ]);
+            echo '<p>Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
+        }
     }
 
     /**
@@ -236,6 +330,10 @@ class Admin
     public function adminFileImport()
     {
         $import = $this->fileImport();
+
+        if (!$import) {
+            return false;
+        }
 
         // Vehicles importer
         $out = '✔︎ Vehicles Imported' . '<br>';
@@ -344,13 +442,14 @@ class Admin
             $file_date = date('Y-m-d H:i:s', filemtime($file));
 
             echo '<tr>';
-            // on hover, show full path
             echo '<td title="' . $file_info['dirname'] . '">' . $file_info['basename'] . '</td>';
             echo '<td>' . $file_size . '</td>';
             echo '<td>' . $file_date . '</td>';
             echo '<td>';
-            echo '<a href="' . admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&file=' . $key . '&action=import') . '">Import</a> • ';
-            echo '<a href="' . admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&file=' . $key . '&action=check') . '">Check</a></td>';
+            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=import&file=' . $key) . '">Import</a> • ';
+            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=check&file=' . $key) . '">Check</a> • ';
+            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=template&file=' . $key) . '">Template</a> • ';
+            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=view&file=' . $key) . '">View</a>';
             echo '</tr>';
         }
 
@@ -359,8 +458,6 @@ class Admin
 
     public function adminVehicleCount()
     {
-        // $vehicle_count = count(get_posts(['post_type' => 'vehicle', 'posts_per_page' => -1]));
-        // echo '<p>' . ($vehicle_count === 0 ? '🟨' : '🟩') . ' Vehicle Count: ' . $vehicle_count . '</p>';
         echo '<div id="vehicle-count"></div>'; // Placeholder for the AJAX result
 
     }
@@ -399,6 +496,17 @@ class Admin
         // get file_data
         $file_data = $this->file_data;
         $template = $this->template['template'];
+
+        // load file
+        $file_path = $this->Files->getPath($_GET['file']);
+        $file_data = $this->Files->getData($file_path);
+
+        // check if file is loaded
+        if (!$file_data) {
+            // admin notice
+            $this->adminNotice('Error reading the file.', 'notice-error');
+            return false;
+        }
 
         // remove header row
         // $file_data = array_slice($file_data, 1);
