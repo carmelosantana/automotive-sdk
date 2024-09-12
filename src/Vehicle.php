@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CarmeloSantana\VinImporter;
+namespace WpAutos\Vehicles;
 
 use Brick\Money\Money;
 use Mustache_Engine;

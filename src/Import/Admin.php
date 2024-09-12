@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CarmeloSantana\VinImporter\Import;
+namespace WpAutos\Vehicles\Import;
 
-use CarmeloSantana\VinImporter\Vehicle;
+use WpAutos\Vehicles\Vehicle;
 
 class Admin
 {
@@ -40,7 +40,7 @@ class Admin
     // enque scripts and styles
     public function adminEnqueue()
     {
-        wp_enqueue_script('vin-importer-admin', VIN_IMPORTER_DIR_URL . 'assets/vin-importer.js', ['jquery'], null, true);
+        wp_enqueue_script('vehicles-sdk-admin', VSDK_DIR_URL . 'assets/vehicles-sdk.js', ['jquery'], null, true);
     }
 
     // output inline js
@@ -62,9 +62,7 @@ class Admin
                     .then(data => {
                         if (data.status === 'success') {
                             // Display the count in the placeholder
-                            document.getElementById('vehicle-count').innerHTML = '🟢 Vehicle Count: ' + data.count;
-                        } else {
-                            document.getElementById('vehicle-count').innerHTML = '⚠️ Error fetching vehicle count';
+                            document.getElementById('vehicle-count').innerHTML = '(' + data.count + ')';
                         }
                     });
             }
@@ -76,10 +74,10 @@ class Admin
     {
         add_submenu_page(
             $this->page_slug,
-            VIN_IMPORTER_TITLE,
-            VIN_IMPORTER_TITLE,
+            VSDK_TITLE,
+            VSDK_TITLE,
             'manage_options',
-            VIN_IMPORTER . '-tools',
+            VSDK . '-tools',
             [$this, 'adminPage']
         );
     }
@@ -93,14 +91,10 @@ class Admin
         require_once ABSPATH . 'wp-admin/includes/image.php';
 
         echo '<div class="wrap">';
-        echo '<h1>VIN Importer</h1>';
+        echo '<h1>WP Autos</h1>';
         echo '<p>Utilities for interacting with multiple vehicle datasets.</p>';
 
-        $this->adminActionsList();
-
-        $this->adminVehicleCount();
-
-        $this->adminPossibleFileList();
+        $this->adminCounts();
 
         $this->adminFileCheck();
 
@@ -129,6 +123,10 @@ class Admin
 
             case 'view':
                 $this->adminFileView();
+                break;
+
+            default:
+                $this->adminPossibleFileList();
                 break;
         }
 
@@ -175,12 +173,9 @@ class Admin
         // output file name as h3
         $file_info = pathinfo($file_path);
         echo '<h3>' . $file_info['basename'] . '</h3>';
-        // echo '<table class="wp-list-table widefat fixed striped">';
-        // echo '<table class="wp-list-table widefat fixed striped" style="width: 100%;">';
-        // echo '<table class="wp-list-table widefat fixed striped" style="width: auto;">';
-        // table header should sticky on scroll
-        echo '<table class="wp-list-table widefat fixed striped" style="width: auto; position: sticky; top: 2em;">';
-
+        
+        echo '<div class="scrollwrapper">';
+        echo '<table class="wp-list-table widefat fixed striped" style="width: auto;">';
         echo '<style>';
         echo 'table.wp-list-table thead th { position: sticky; top: 2em; background: #fff; z-index: 1; }';
         echo '</style>';
@@ -209,14 +204,15 @@ class Admin
             echo '</tr>';
         }
         echo '</tbody></table>';
+        echo '</div>';
 
         if ($total_items === (count($file_data) - 1)) {
             echo '<p>Total: ' . esc_html($total_items) . '</p>';
         } else {
             echo '<p>✔︎ Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
             echo paginate_links([
-                // 'base' => admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&action=view&file=' . $_GET['file'] . '&paged=%#%'),
-                'base' => admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=view&file=' . $_GET['file'] . '&paged=%#%'),
+                // 'base' => admin_url('admin.php?page=' . VSDK . '-tools&action=view&file=' . $_GET['file'] . '&paged=%#%'),
+                'base' => admin_url($this->page_slug . '&page=' . VSDK . '-tools&action=view&file=' . $_GET['file'] . '&paged=%#%'),
                 'format' => '&paged=%#%',
                 'current' => $current_page,
                 'total' => $total_pages,
@@ -255,7 +251,7 @@ class Admin
         $out = '<p>';
 
         foreach ($actions as $action => $description) {
-            $out .= '<a href="' . admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&action=' . $action) . '" class="button">' . $description . '</a> ';
+            $out .= '<a href="' . admin_url('admin.php?page=' . VSDK . '-tools&action=' . $action) . '" class="button">' . $description . '</a> ';
         }
 
         $out .= '</p>';
@@ -277,7 +273,7 @@ class Admin
 
         // header with inline button
         echo '<h3 class="wp-heading-inline">File Info</h3>';
-        echo '<a href="' . admin_url('admin.php?page=' . VIN_IMPORTER . '-tools&file=' . $_GET['file'] . '&action=import') . '" class="button-primary">Import</a>';
+        echo '<a href="' . admin_url('admin.php?page=' . VSDK . '-tools&file=' . $_GET['file'] . '&action=import') . '" class="button-primary">Import</a>';
 
         $file = $_GET['file'] ?? null;
         $file_path = $this->library[$file];
@@ -409,7 +405,7 @@ class Admin
 
     public function adminFilesRefresh()
     {
-        delete_transient('vin_importer_files');
+        delete_transient('VSDK_files');
         $this->library = $this->Files->refresh();
         $this->adminNotice('Files refreshed.', 'notice-success');
     }
@@ -423,18 +419,15 @@ class Admin
 
     public function adminPossibleFileList()
     {
-        $this->library = $this->Files->getAll();
-
-        echo '<p>' . (count($this->library) === 0 ? '🟡' : '🟢') . ' Files Found: ' . count($this->library) . '</p>';
-
-        echo '<table class="wp-list-table widefat fixed striped">';
-
+        echo '<div class="scrollwrapper">';
+        echo '<table class="wp-list-table widefat fixed striped" style="width: 100%;">';
+        echo '<thead>';
         echo '<tr>';
         echo '<th style="width: 200px;">File</th>';
         echo '<th style="width: 100px;">Size</th>';
         echo '<th style="width: 200px;">Date</th>';
-        echo '<th style="width: 100px;">Action</th>';
         echo '</tr>';
+        echo '</thead><tbody>';
 
         foreach ($this->library as $key => $file) {
             $file_info = pathinfo($file);
@@ -442,24 +435,39 @@ class Admin
             $file_date = date('Y-m-d H:i:s', filemtime($file));
 
             echo '<tr>';
-            echo '<td title="' . $file_info['dirname'] . '">' . $file_info['basename'] . '</td>';
-            echo '<td>' . $file_size . '</td>';
-            echo '<td>' . $file_date . '</td>';
-            echo '<td>';
-            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=import&file=' . $key) . '">Import</a> • ';
-            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=check&file=' . $key) . '">Check</a> • ';
-            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=template&file=' . $key) . '">Template</a> • ';
-            echo '<a href="' . admin_url($this->page_slug . '&page=' . VIN_IMPORTER . '-tools&action=view&file=' . $key) . '">View</a>';
+            echo '<td title="' . esc_attr($file_info['dirname']) . '">' . esc_html($file_info['basename']);
+            echo '<div class="row-actions">';
+            echo '<span class="edit"><a href="' . esc_url(admin_url('admin.php?page=' . VSDK . '-tools&action=import&file=' . $key)) . '" aria-label="Import file">Import</a> | </span>';
+            echo '<span class="check"><a href="' . esc_url(admin_url('admin.php?page=' . VSDK . '-tools&action=check&file=' . $key)) . '" aria-label="Check file">Check</a> | </span>';
+            echo '<span class="template"><a href="' . esc_url(admin_url('admin.php?page=' . VSDK . '-tools&action=template&file=' . $key)) . '" aria-label="View template">Template</a> | </span>';
+            echo '<span class="view"><a href="' . esc_url(admin_url('admin.php?page=' . VSDK . '-tools&action=view&file=' . $key)) . '" aria-label="View file">View</a></span>';
+            echo '</div>';
+            echo '</td>';
+            echo '<td>' . esc_html($file_size) . '</td>';
+            echo '<td>' . esc_html($file_date) . '</td>';
             echo '</tr>';
         }
 
-        echo '</table>';
+        echo '</tbody></table>';
+        echo '</div>';
     }
 
-    public function adminVehicleCount()
+    public function adminCounts()
     {
-        echo '<div id="vehicle-count"></div>'; // Placeholder for the AJAX result
+        $this->library = $this->Files->getAll();
 
+        echo '<ul class="subsubsub">';
+        echo '<li class="all">All Vehicles <span class="count" id="vehicle-count">Loading...</span></li>';
+        echo '<li><a href="' . admin_url($this->page_slug . '&page=' . VSDK . '-tools') . '">Files</a> (' . count($this->library) . ')</li>';
+        echo '</ul>';
+
+        echo '<div class="tablenav top">';
+        echo '<div class="alignleft actions bulkactions">';
+        $this->adminActionsList();
+        echo '</div>';
+        echo '</div>';
+
+        echo '<div class="clear"></div>';
     }
 
     public function adminVehiclesDelete()

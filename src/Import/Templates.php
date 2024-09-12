@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CarmeloSantana\VinImporter\Import;
+namespace WpAutos\Vehicles\Import;
 
 class Templates
 {

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace CarmeloSantana\VinImporter\Import;
+namespace WpAutos\Vehicles\Import;
 
 class Files
 {
     public function getAll()
     {
         // save files to transient for 5 minutes
-        $files = get_transient('vin_importer_files');
+        $files = get_transient('');
         if ($files === false) {
             $files = $this->refresh();
-            set_transient('vin_importer_files', $files, 300);
+            set_transient('VSDK_files', $files, 300);
         }
         return $files;
     }

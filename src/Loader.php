@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CarmeloSantana\VinImporter;
+namespace WpAutos\Vehicles;
 
-use CarmeloSantana\VinImporter\Vehicle;
+use WpAutos\Vehicles\Vehicle;
 
 const VERSION = '0.1.0';
 

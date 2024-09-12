@@ -1,0 +1,32 @@
+/* vehicles-sdk-admin.css */
+
+/* Hide the actions by default */
+/* .hidden-actions {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+} */
+
+/* Show the actions when the row is hovered */
+/* tr:hover .hidden-actions {
+    display: inline-block;
+    opacity: 1;
+} */
+
+/* Align the actions similar to the WordPress post listing */
+.row-actions {
+    /* position: relative; */
+    text-align: left;
+}
+
+.row-actions .hidden-actions a {
+    color: #0073aa;
+}
+
+.row-actions .hidden-actions a:hover {
+    color: #005177;
+}
+
+.scrollwrapper {
+    overflow: auto;
+}
