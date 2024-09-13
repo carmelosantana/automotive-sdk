@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WpAutos\Vehicles\Import;
 
+use WpAutos\Vehicles\Admin\Render;
 use WpAutos\Vehicles\Vehicle;
 
 class Admin
@@ -24,6 +25,8 @@ class Admin
 
     private $Files;
 
+    private Render $Render;
+
     public function __construct()
     {
         add_action('admin_menu', [$this, 'adminMenu']);
@@ -35,6 +38,7 @@ class Admin
         add_filter('upload_mimes', [$this, 'allowUploadMimes']);
 
         $this->Files = new Files();
+        $this->Render = new Render();
     }
 
     // enque scripts and styles
@@ -90,14 +94,19 @@ class Admin
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/image.php';
 
-        echo '<div class="wrap">';
-        echo '<h1>WP Autos</h1>';
-        echo '<p>Utilities for interacting with multiple vehicle datasets.</p>';
+        $this->Render->adminHeader('WP Autos', 'Utilities for interacting with multiple vehicle datasets.');
 
         $this->adminCounts();
 
         $this->adminFileCheck();
 
+        $this->adminAction();
+
+        $this->Render->adminFooter();
+    }
+
+    public function adminAction()
+    {
         switch ($_GET['action'] ?? null) {
             case 'delete_all_vehicles':
                 $this->adminVehiclesDelete();
@@ -113,10 +122,6 @@ class Admin
                 $this->adminFilesRefresh();
                 break;
 
-            case 'get_all_headers':
-                $this->adminFilesGetHeaders();
-                break;
-
             case 'template':
                 $this->adminFileInfo();
                 break;
@@ -127,10 +132,9 @@ class Admin
 
             default:
                 $this->adminPossibleFileList();
+                $this->adminFilesGetHeaders();
                 break;
         }
-
-        echo '</div>';
     }
 
     /**
@@ -173,7 +177,7 @@ class Admin
         // output file name as h3
         $file_info = pathinfo($file_path);
         echo '<h3>' . $file_info['basename'] . '</h3>';
-        
+
         echo '<div class="scrollwrapper">';
         echo '<table class="wp-list-table widefat fixed striped" style="width: auto;">';
         echo '<style>';
@@ -387,6 +391,8 @@ class Admin
         if (!isset($this->library)) {
             $this->library = $this->Files->getAll();
         }
+        echo '<h3>Headers</h3>';
+        echo '<textarea style="width: 100%; height: 200px;">';
 
         // output first row of all files
         foreach ($this->library as $key => $file) {
@@ -401,6 +407,7 @@ class Admin
             echo implode(',', $file_data) . PHP_EOL;
             echo PHP_EOL;
         }
+        echo '</textarea>';
     }
 
     public function adminFilesRefresh()

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles\Admin\Render;
+namespace WpAutos\Vehicles\Admin;
 
 class Render
 {
