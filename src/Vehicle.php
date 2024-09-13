@@ -17,6 +17,10 @@ class Vehicle
         // Setup search
         new Vehicle\Search();
 
+        // Setup REST API
+        new Api\VehiclesApi();
+        new Api\VehiclesListApi();
+
         // Finally setup output rendering after everything is setup
         new Vehicle\Render();
     }
