@@ -6,11 +6,15 @@ namespace WpAutos\Vehicles\Api;
 
 class VehiclesApi
 {
+    protected VehicleFields $vehicleFields;
+
     protected VehicleSearch $vehicleSearch;
 
     public function __construct()
     {
+        $this->vehicleFields = new VehicleFields();
         $this->vehicleSearch = new VehicleSearch();
+
         add_action('rest_api_init', [$this, 'registerRoutes']);
     }
 
@@ -22,6 +26,12 @@ class VehiclesApi
         register_rest_route('api/v0', '/vehicles/all', [
             'methods' => 'GET',
             'callback' => [$this, 'getVehicles'],
+            'permission_callback' => '__return_true', // public access
+        ]);
+
+        register_rest_route('api/v0', '/vehicles/fields', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getVehicleFields'],
             'permission_callback' => '__return_true', // public access
         ]);
 
@@ -89,6 +99,18 @@ class VehiclesApi
         ];
 
         return new \WP_REST_Response($vehicle, 200);
+    }
+
+    /**
+     * Get a schema of acceptable key/values for searching.
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function getVehicleFields(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $fields = $this->vehicleFields->getFields();
+        return new \WP_REST_Response($fields, 200);
     }
 
     /**
