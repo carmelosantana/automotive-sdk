@@ -78,8 +78,8 @@ class Admin
     {
         add_submenu_page(
             $this->page_slug,
-            VSDK_TITLE,
-            VSDK_TITLE,
+            'Import',
+            'Import',
             'manage_options',
             VSDK . '-tools',
             [$this, 'adminPage']
