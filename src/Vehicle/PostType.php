@@ -20,7 +20,7 @@ class PostType
         $labels = [
             'name' => __('Vehicles'),
             'singular_name' => __('Vehicle'),
-            'add_new' => __('Add Vehicle'),
+            'add_new' => __('Add New'),
             'add_new_item' => __('Add New Vehicle'),
             'edit_item' => __('Edit Vehicle'),
             'new_item' => __('New Vehicle'),
