@@ -30,7 +30,6 @@ class Meta
         $columns['vin'] = 'VIN';
 
         // remove title
-        unset($columns['title']);
         unset($columns['date']);
         return $columns;
     }
