@@ -166,6 +166,63 @@ class Meta
         }
     }
 
+    // display custom meta boxes for custom post type item
+    public function metaboxRegister()
+    {
+        // add_meta_box(
+        //     'vehicle_meta_box',
+        //     'Vehicle Details',
+        //     [$this, 'metaboxDisplay'],
+        //     $this->slug,
+        //     'advanced',
+        //     'high'
+        // );
+
+        // add meta box per section
+        $fields = Fields::get();
+        foreach ($fields as $section => $field) {
+            add_meta_box(
+                'vehicle_meta_box_' . $section,
+                $field['description'],
+                // use a display function that takes the section as an argument
+                function ($post) use ($section) {
+                    $fields = Fields::get()[$section]['fields'];
+                    $meta = get_post_meta($post->ID);
+
+                    foreach ($fields as $field) {
+                        $value = $meta[$field['name']][0] ?? '';
+                        $label = $field['label'];
+                        $type = $field['type'];
+                        $name = $field['name'];
+
+                        // label on the left, input on the right
+                        echo '<div style="display: flex; margin-bottom: 1rem;">';
+                        echo '<label style="width: 200px;">' . $label . '</label>';
+
+                        // use switch for different input types
+                        switch ($type) {
+                            case 'text':
+                                echo '<input type="text" name="' . $name . '" value="' . $value . '" style="width: 100%;">';
+                                break;
+                            case 'number':
+                                echo '<input type="number" name="' . $name . '" value="' . $value . '" style="width: 100%;">';
+                                break;
+                            case 'textarea':
+                                echo '<textarea name="' . $name . '" style="width: 100%;">' . $value . '</textarea>';
+                                break;
+                        }
+
+                        echo '</div>';
+                    }
+                },
+                'vehicle',
+                'advanced',
+                'high',
+                $field
+            );
+        }
+    }
+
     // save custom meta box
     public function metaboxSave($post_id)
     {
