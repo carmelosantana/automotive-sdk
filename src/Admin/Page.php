@@ -21,6 +21,7 @@ class Page
 
     public function adminEnqueue()
     {
+        add_thickbox();
         wp_enqueue_style('vehicles-sdk-admin', VSDK_DIR_URL . 'assets/css/vehicles-sdk.css');
         wp_enqueue_script('vehicles-sdk-admin', VSDK_DIR_URL . 'assets/js/vehicles-sdk.js', ['jquery'], null, true);
     }
