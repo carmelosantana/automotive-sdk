@@ -29,11 +29,62 @@ class PageImport extends Page
     {
         parent::__construct();
 
+        add_action('admin_enqueue_scripts', [$this, 'adminAdditionalScripts']);
         add_action('admin_footer', [$this, 'adminInlineJs']);
         add_action('wp_ajax_get_vehicle_count', [$this, 'adminVehicleCountAjax']);
         add_action('wp_ajax_nopriv_get_vehicle_count', [$this, 'adminVehicleCountAjax']); // for non-logged-in users
+        add_action('wp_ajax_start_vehicle_import', [$this, 'startVehicleImportAjax']);
+        add_action('wp_ajax_process_vehicle_import_batch', [$this, 'processVehicleImportBatchAjax']);
 
         $this->Files = new Files();
+    }
+
+    public function adminAdditionalScripts(): void
+    {
+        wp_enqueue_script('vehicles-import-js', VSDK_DIR_URL . 'assets/js/vehicles-import.js', ['jquery'], null, true);
+        wp_localize_script('vehicles-import-js', 'vehiclesImport', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+        ]);
+    }
+
+    /**
+     * Start the vehicle import process and return the total number of rows.
+     */
+    public function startVehicleImportAjax(): void
+    {
+        if (!$this->adminLoadFile()) {
+            wp_send_json_error('File not found.', 400);
+        }
+
+        $file = $_GET['file'] ?? null;
+        $import = new Csv();
+        $import->setFile($file);
+
+        wp_send_json_success(['total' => $this->file->getTotalRows()]);
+    }
+
+    /**
+     * Process a batch of vehicles for import.
+     */
+    public function processVehicleImportBatchAjax(): void
+    {
+        if (!$this->adminLoadFile()) {
+            // Debugging output
+            error_log('File not found. Key: ' . ($_REQUEST['file'] ?? 'none'));
+            wp_send_json_error('File not found.', 400);
+        }
+
+        $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+        $limit = isset($_POST['limit']) ? intval($_POST['limit']) : 10;
+
+        $import = new Csv();
+        $import->setFile($_REQUEST['file']);
+        $results = $import->fileImportBatch($offset, $limit);
+
+        // add file to results
+        $results['file'] = $_REQUEST['file'];
+
+        wp_send_json_success($results);
     }
 
     public function adminContent(): void
@@ -49,6 +100,7 @@ class PageImport extends Page
                 break;
 
             case 'view':
+                $this->adminFileHeader();
                 $this->adminFileView();
                 break;
 
@@ -74,9 +126,10 @@ class PageImport extends Page
 
     public function adminLoadFile(): bool
     {
-        $file = $_GET['file'] ?? null;
+        $file = $_REQUEST['file'] ?? null;
 
         if (!$file) {
+            // error_log('No file key provided.');
             return false;
         }
 
@@ -84,6 +137,7 @@ class PageImport extends Page
         $this->file->load($file);
 
         if (!$this->file->isLoaded()) {
+            // error_log('File failed to load: ' . $file);
             return false;
         }
 
@@ -92,8 +146,16 @@ class PageImport extends Page
 
     public function adminFileHeader()
     {
+        if (!$this->adminLoadFile()) {
+            echo '✘ File not found.';
+            return;
+        }
+
+        // $this->adminProgress();
+
         echo '<h3 class="wp-heading-inline">File Info</h3>';
-        echo '<a href="' . admin_url('admin.php?page=' . VSDK . '-tools&file=' . $_GET['file'] . '&action=import') . '" class="button-primary">Import</a>';
+        // echo '<button id="start-import" class="button-primary" data-file="' . esc_attr($_GET['file']) . '">Start Import</button>';
+        $this->adminProgress();
 
         echo '<pre>';
         echo 'Header Hash: ' . $this->file->getHeaderHash() . PHP_EOL;
@@ -118,6 +180,14 @@ class PageImport extends Page
         echo '</table>';
 
         echo '<br>';
+    }
+
+    public function adminProgress()
+    {
+        echo '<button id="start-import" class="button-primary" data-file="' . esc_attr($_GET['file']) . '">Start Import</button>';
+        echo '<div class="progress-wrapper">';
+        echo '  <div id="import-progress" class="progress-bar" style="width: 0%;"></div>';
+        echo '</div>';
     }
 
     public function adminFileImport()

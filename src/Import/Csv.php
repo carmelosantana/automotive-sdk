@@ -66,13 +66,77 @@ class Csv
         ];
     }
 
-    public function setFile($file)
+
+    /**
+     * Set the file for the CSV import.
+     *
+     * @param string $file
+     * @return $this
+     */
+    public function setFile(string $file): self
     {
         $this->file = new File();
         $this->file->load($file);
 
         return $this;
-    }    
+    }
+
+    /**
+     * Process a batch of vehicle data.
+     *
+     * @param int $offset The starting row for the batch.
+     * @param int $limit The number of rows to process.
+     * @return array Contains the number of vehicles added and updated.
+     */
+    public function fileImportBatch(int $offset, int $limit): array
+    {
+        $file_data = $this->file->getData();
+
+        if (!$file_data) {
+            return ['added' => 0, 'updated' => 0];
+        }
+
+        // Remove the header row if it's the first batch
+        if ($offset === 0) {
+            unset($file_data[0]);
+        }
+
+        $file_data = array_slice($file_data, $offset, $limit);
+
+        $vehicles_added = [];
+        $vehicles_updated = [];
+        foreach ($file_data as $data) {
+            $vehicle = $this->mapDataToVehicle($data);
+
+            // Check if the vehicle exists
+            $vin_exists = get_posts(['post_type' => 'vehicle', 'meta_key' => 'vin', 'meta_value' => $vehicle['vin']]);
+
+            if (count($vin_exists) > 0) {
+                $vehicle_id = $vin_exists[0]->ID;
+                wp_update_post([
+                    'ID' => $vehicle_id,
+                    'post_title' => $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'],
+                ]);
+                $vehicles_updated[] = $vehicle_id;
+            } else {
+                // Insert new vehicle
+                $vehicle_id = wp_insert_post([
+                    'post_type' => 'vehicle',
+                    'post_title' => $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'],
+                    'post_status' => 'publish',
+                ]);
+                $vehicles_added[] = $vehicle_id;
+            }
+
+            // Add meta and taxonomy
+            $this->addMetaAndTaxonomy($vehicle_id, $vehicle);
+        }
+
+        return [
+            'added' => count($vehicles_added),
+            'updated' => count($vehicles_updated),
+        ];
+    }
 
     /**
      * Adds meta and taxonomy to a vehicle post.

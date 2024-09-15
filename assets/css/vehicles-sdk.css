@@ -43,3 +43,18 @@
 .wp-autos .subsubsub li:last-child::after {
     content: "";
 }
+
+.progress-wrapper {
+    width: 100%;
+    background-color: #f3f3f3;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}
+
+.progress-bar {
+    height: 25px;
+    background-color: #4caf50;
+    text-align: center;
+    color: white;
+    line-height: 25px;
+}
