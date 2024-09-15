@@ -44,17 +44,17 @@
     content: "";
 }
 
-.progress-wrapper {
+.wp-autos .progress-wrapper {
+    display: none;
     width: 100%;
-    background-color: #f3f3f3;
-    border: 1px solid #ccc;
-    margin-top: 10px;
 }
 
-.progress-bar {
-    height: 25px;
-    background-color: #4caf50;
+.wp-autos .progress-bar {
+    height: 26px;
+    background: linear-gradient(90deg, #0073aa, #9b51e0);
     text-align: center;
     color: white;
-    line-height: 25px;
+    line-height: 26px !important;
+    border-radius: 5px;
+    transition: width 0.33s ease;
 }
