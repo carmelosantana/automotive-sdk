@@ -1,5 +1,5 @@
 {
-    "name": "carmelosantana/vin-importer",
+    "name": "wpautos/vehicles-sdk",
     "version": "0.1.0",
     "description": "Import vehicles from various sources.",
     "type": "wordpress-plugin",
@@ -12,7 +12,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "CarmeloSantana\\VinImporter\\": "src/"
+            "WpAutos\\VehiclesSdk\\": "src/"
         }
     },
     "repositories": [

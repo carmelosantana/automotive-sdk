@@ -1,0 +1,60 @@
+/* Styling for row actions */
+.wp-autos .row-actions {
+    text-align: left;
+}
+
+/* Hidden actions links */
+.wp-autos .row-actions .hidden-actions a {
+    color: #0073aa;
+}
+
+.wp-autos .row-actions .hidden-actions a:hover {
+    color: #005177;
+}
+
+/* Wrapper to allow horizontal scrolling */
+.wp-autos .scrollwrapper {
+    overflow: auto;
+}
+
+/* Styling for subsubsub list */
+.wp-autos .subsubsub li a {
+    padding: 0;
+}
+
+/* Styling for 'all' link */
+.wp-autos .subsubsub li.all a {
+    font-weight: bold;
+}
+
+/* Styling for the count element */
+.wp-autos .subsubsub .count {
+    font-weight: normal;
+}
+
+/* Separator styling for subsubsub list items */
+.wp-autos .subsubsub li::after {
+    content: "|";
+    padding: 0 6px;
+    /* Combined padding-left and padding-right */
+}
+
+/* Remove the separator after the last item */
+.wp-autos .subsubsub li:last-child::after {
+    content: "";
+}
+
+.wp-autos .progress-wrapper {
+    display: none;
+    width: 100%;
+}
+
+.wp-autos .progress-bar {
+    height: 26px;
+    background: linear-gradient(90deg, #0073aa, #9b51e0);
+    text-align: center;
+    color: white;
+    line-height: 26px !important;
+    border-radius: 5px;
+    transition: width 0.33s ease;
+}
