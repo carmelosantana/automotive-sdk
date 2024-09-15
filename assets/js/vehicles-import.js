@@ -1,49 +1,54 @@
 jQuery(document).ready(function ($) {
-    const importButton = $('#start-import');
+    const progressWrapper = $('.progress-wrapper');
+    const importProgress = $('#import-progress');
 
-    if (importButton.length) {
-        let totalRows = 0;
-        let processedRows = 0;
+    // Handle click events for the import links
+    $(document).on('click', '.start-import-link', function (event) {
+        const importButton = $(this);
+        const file = importButton.data('file');
+        const nonce = importButton.data('nonce');
+
+        // Disable the link and show the progress bar
+        importButton.addClass('disabled').blur();
+        progressWrapper.show();
+
+        // Start the import process
+        $.get(vehiclesImport.ajaxUrl, { action: 'start_vehicle_import', file: file, nonce: nonce })
+            .done(function (data) {
+                if (data.success) {
+                    const totalRows = data.data.total;
+                    processBatch(file, nonce, totalRows, 0);
+                }
+            });
+    });
+
+    function processBatch(file, nonce, totalRows, processedRows) {
         const batchSize = 10;
+        $.post(vehiclesImport.ajaxUrl, {
+            action: 'process_vehicle_import_batch',
+            file: file,
+            offset: processedRows,
+            limit: batchSize,
+            nonce: nonce
+        })
+            .done(function (data) {
+                if (data.success) {
+                    processedRows += batchSize;
+                    updateProgressBar(processedRows, totalRows);
+                    fetchVehicleCount();    // From PageImport.php
 
-        importButton.on('click', function () {
-            const file = importButton.data('file');
-            const nonce = importButton.data('nonce'); // Pass nonce
-            $.get(vehiclesImport.ajaxUrl, { action: 'start_vehicle_import', file: file, nonce: nonce })
-                .done(function (data) {
-                    if (data.success) {
-                        totalRows = data.data.total;
-                        processBatch();
+                    if (processedRows < totalRows) {
+                        processBatch(file, nonce, totalRows, processedRows);
+                    } else {
+                        alert('Import completed');
+                        $('.start-import-link').removeClass('disabled');
                     }
-                });
-        });
+                }
+            });
+    }
 
-        function processBatch() {
-            $.post(vehiclesImport.ajaxUrl, {
-                action: 'process_vehicle_import_batch',
-                file: importButton.data('file'),
-                offset: processedRows,
-                limit: batchSize,
-                nonce: importButton.data('nonce') // Pass nonce
-            })
-                .done(function (data) {
-                    if (data.success) {
-                        processedRows += batchSize;
-                        updateProgressBar(processedRows, totalRows);
-                        fetchVehicleCount();
-
-                        if (processedRows < totalRows) {
-                            processBatch();
-                        } else {
-                            alert('Import completed');
-                        }
-                    }
-                });
-        }
-
-        function updateProgressBar(current, total) {
-            const progress = Math.min((current / total) * 100, 100);
-            $('#import-progress').css('width', progress + '%').text(Math.round(progress) + '%');
-        }
+    function updateProgressBar(current, total) {
+        const progress = Math.min((current / total) * 100, 100);
+        importProgress.css('width', progress + '%').text(Math.round(progress) + '%');
     }
 });
