@@ -52,11 +52,13 @@ class PageImport extends Page
      */
     public function startVehicleImportAjax(): void
     {
+        check_ajax_referer('vehicle_import_nonce', 'nonce');
+
         if (!$this->adminLoadFile()) {
             wp_send_json_error('File not found.', 400);
         }
 
-        $file = $_GET['file'] ?? null;
+        $file = $_REQUEST['file'] ?? null;
         $import = new Csv();
         $import->setFile($file);
 
@@ -68,9 +70,9 @@ class PageImport extends Page
      */
     public function processVehicleImportBatchAjax(): void
     {
+        check_ajax_referer('vehicle_import_nonce', 'nonce');
+
         if (!$this->adminLoadFile()) {
-            // Debugging output
-            error_log('File not found. Key: ' . ($_REQUEST['file'] ?? 'none'));
             wp_send_json_error('File not found.', 400);
         }
 
@@ -80,9 +82,6 @@ class PageImport extends Page
         $import = new Csv();
         $import->setFile($_REQUEST['file']);
         $results = $import->fileImportBatch($offset, $limit);
-
-        // add file to results
-        $results['file'] = $_REQUEST['file'];
 
         wp_send_json_success($results);
     }
@@ -184,10 +183,13 @@ class PageImport extends Page
 
     public function adminProgress()
     {
-        echo '<button id="start-import" class="button-primary" data-file="' . esc_attr($_GET['file']) . '">Start Import</button>';
+        $nonce = wp_create_nonce('vehicle_import_nonce');
+        echo '<div style="display: flex; align-items: center;">'; // Flex container
+        echo '<button id="start-import" class="button-primary" data-file="' . esc_attr($_GET['file']) . '" data-nonce="' . esc_attr($nonce) . '">Start Import</button>';
         echo '<div class="progress-wrapper">';
         echo '  <div id="import-progress" class="progress-bar" style="width: 0%;"></div>';
         echo '</div>';
+        echo '</div>'; // End of flex container
     }
 
     public function adminFileImport()

@@ -5,12 +5,11 @@ jQuery(document).ready(function ($) {
         let totalRows = 0;
         let processedRows = 0;
         const batchSize = 10;
-        const fileKey = importButton.data('file');
 
         importButton.on('click', function () {
             const file = importButton.data('file');
-
-            $.get(vehiclesImport.ajaxUrl, { action: 'start_vehicle_import', file: file })
+            const nonce = importButton.data('nonce'); // Pass nonce
+            $.get(vehiclesImport.ajaxUrl, { action: 'start_vehicle_import', file: file, nonce: nonce })
                 .done(function (data) {
                     if (data.success) {
                         totalRows = data.data.total;
@@ -19,20 +18,22 @@ jQuery(document).ready(function ($) {
                 });
         });
 
-        function processBatch(file) {
+        function processBatch() {
             $.post(vehiclesImport.ajaxUrl, {
                 action: 'process_vehicle_import_batch',
+                file: importButton.data('file'),
                 offset: processedRows,
                 limit: batchSize,
-                file: fileKey
+                nonce: importButton.data('nonce') // Pass nonce
             })
                 .done(function (data) {
                     if (data.success) {
                         processedRows += batchSize;
                         updateProgressBar(processedRows, totalRows);
+                        fetchVehicleCount();
 
                         if (processedRows < totalRows) {
-                            processBatch(file);
+                            processBatch();
                         } else {
                             alert('Import completed');
                         }
