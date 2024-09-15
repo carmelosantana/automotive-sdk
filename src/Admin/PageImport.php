@@ -95,11 +95,11 @@ class PageImport extends Page
                 break;
 
             case 'template':
+                $this->adminFileHeader();
                 $this->adminFileInfo();
                 break;
 
             case 'view':
-                $this->adminFileHeader();
                 $this->adminFileView();
                 break;
 
@@ -113,11 +113,11 @@ class PageImport extends Page
     {
         echo '<div>';
         echo '<ul class="subsubsub">';
-        echo '<li class="all">';
+        echo '<li class="all"><a href="' . $this->generatePageUrl('import') . '">Files</a> (' . count($this->Files->getAll()) . ')</li>';
+        echo '<li class="published">';
         echo '<a href="' . admin_url('edit.php?post_type=vehicle') . '">Vehicles</a> ';
         echo '<span class="count" id="vehicle-count">Loading...</span>';
         echo '</li>';
-        echo '<li><a href="' . $this->generatePageUrl('import') . '">Files</a> (' . count($this->Files->getAll()) . ')</li>';
         echo '</ul>';
         echo '</div>';
         echo '<div class="clear"></div>';
@@ -150,11 +150,7 @@ class PageImport extends Page
             return;
         }
 
-        // $this->adminProgress();
-
         echo '<h3 class="wp-heading-inline">File Info</h3>';
-        // echo '<button id="start-import" class="button-primary" data-file="' . esc_attr($_GET['file']) . '">Start Import</button>';
-        $this->adminProgress();
 
         echo '<pre>';
         echo 'Header Hash: ' . $this->file->getHeaderHash() . PHP_EOL;
@@ -183,13 +179,11 @@ class PageImport extends Page
 
     public function adminProgress()
     {
-        $nonce = wp_create_nonce('vehicle_import_nonce');
-        echo '<div style="display: flex; align-items: center;">'; // Flex container
-        echo '<button id="start-import" class="button-primary" data-file="' . esc_attr($_GET['file']) . '" data-nonce="' . esc_attr($nonce) . '">Start Import</button>';
+        echo '<div style="display: flex; align-items: center;">';
         echo '<div class="progress-wrapper">';
-        echo '  <div id="import-progress" class="progress-bar" style="width: 0%;"></div>';
+        echo ' <div id="import-progress" class="progress-bar" style="width: 0%;"></div>';
         echo '</div>';
-        echo '</div>'; // End of flex container
+        echo '</div>';
     }
 
     public function adminFileImport()
@@ -295,7 +289,9 @@ class PageImport extends Page
 
         $total_pages = ceil($total_items / $per_page);
 
-        echo '<h3>' . esc_html($this->file->getFileName()) . '</h3>';
+        echo '<h3>' . esc_html($this->file->getFileName());
+        echo ' <a href="#" class="start-import-link button-primary" data-file="' . esc_attr($_GET['file']) . '" data-nonce="' . wp_create_nonce('vehicle_import_nonce') . '">Import</a>';
+        echo '</h3>';
 
         echo '<div class="scrollwrapper">';
         echo '<table class="wp-list-table widefat fixed striped" style="width: auto;">';
@@ -339,9 +335,12 @@ class PageImport extends Page
     public function adminHeader(): void
     {
         echo '<div class="wp-autos wrap">';
-        echo '<h1>' . esc_html($this->page_title) . '</h1>';
+        echo '<h1 class="wp-heading-inline">' . esc_html($this->page_title);
+        echo '</h1>';
 
         $this->adminCounts();
+
+        $this->adminProgress();
 
         if (!empty($this->page_description)) {
             echo '<p>' . esc_html($this->page_description) . '</p>';
@@ -394,17 +393,11 @@ class PageImport extends Page
         echo '</thead><tbody>';
 
         $row_actions = [
-            'import' => [
-                'description' => 'Import',
-            ],
-            'check' => [
-                'description' => 'Check',
-            ],
             'template' => [
                 'description' => 'Template',
             ],
             'view' => [
-                'description' => 'View',
+                'description' => 'Preview',
             ]
         ];
 
@@ -416,7 +409,11 @@ class PageImport extends Page
             echo '<td>' . esc_html($file->getFileName()) . '<br>';
             echo '<div class="row-actions">';
 
-            $row = '';
+            // Generate the import link
+            $nonce = wp_create_nonce('vehicle_import_nonce');
+            $import_link = '<a href="#" class="start-import-link" data-file="' . esc_attr($key) . '" data-nonce="' . esc_attr($nonce) . '">Import</a> | ';
+
+            $row = $import_link;
             foreach ($row_actions as $action => $data) {
                 $args = [
                     'action' => $action,
@@ -426,8 +423,8 @@ class PageImport extends Page
                 $row .= '<a href="' . esc_url($this->generatePageUrl('', $args)) . '" class="' . esc_attr($data['class']) . '">' . esc_html($data['description']) . '</a> | ';
             }
             $row = rtrim($row, ' | ');
-
             echo $row;
+
             echo '</div>';
             echo '</td>';
             echo '<td>' . size_format($file->getFileSize(), 2) . '</td>';
