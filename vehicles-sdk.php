@@ -32,7 +32,7 @@ if (!file_exists($composer = plugin_dir_path(__FILE__) . 'vendor/autoload.php'))
 require $composer;
 
 add_action('plugins_loaded', function () {
-    new \WpAutos\Vehicles\Loader();
+    new \WpAutos\VehiclesSdk\Loader();
 
     // flush permalinks on plugin activation
     register_activation_hook(__FILE__, 'flush_rewrite_rules');

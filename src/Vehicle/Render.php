@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles\Vehicle;
+namespace WpAutos\VehiclesSdk\Vehicle;
 
 use Brick\Money\Money;
 use Mustache_Engine;

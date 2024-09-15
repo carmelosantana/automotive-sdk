@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles\Api;
+namespace WpAutos\VehiclesSdk\Api\Vehicles;
 
 class VehicleSearch
 {

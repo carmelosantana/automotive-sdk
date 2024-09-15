@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles;
+namespace WpAutos\VehiclesSdk;
 
 class Vehicle
 {
@@ -18,8 +18,7 @@ class Vehicle
         new Vehicle\Search();
 
         // Setup REST API
-        new Api\VehiclesApi();
-        new Api\VehiclesListApi();
+        new Api\Vehicles\VehicleApi();
 
         // Finally setup output rendering after everything is setup
         new Vehicle\Render();

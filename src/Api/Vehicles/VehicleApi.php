@@ -2,17 +2,20 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles\Api;
+namespace WpAutos\VehiclesSdk\Api\Vehicles;
 
-class VehiclesApi
+class VehicleApi
 {
     protected VehicleFields $vehicleFields;
+
+    protected VehicleListApi $vehicleList;
 
     protected VehicleSearch $vehicleSearch;
 
     public function __construct()
     {
         $this->vehicleFields = new VehicleFields();
+        $this->vehicleList = new VehicleListApi();
         $this->vehicleSearch = new VehicleSearch();
 
         add_action('rest_api_init', [$this, 'registerRoutes']);
