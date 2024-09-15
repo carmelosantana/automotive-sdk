@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles\Import;
+namespace WpAutos\VehiclesSdk\Import;
 
-class Templates
+class Mapping
 {
     public static function reverseMapping($original_keys)
     {

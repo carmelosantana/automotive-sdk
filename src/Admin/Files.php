@@ -2,17 +2,56 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\Vehicles\Import;
+namespace WpAutos\VehiclesSdk\Admin;
 
+/**
+ * Class Files
+ * Handles operations related to file management including checking existence, retrieving data, and refreshing file lists.
+ */
 class Files
 {
-    public function getAll()
+    /**
+     * @var array List of all files with their md5 hash as keys and paths as values.
+     */
+    private array $files;
+
+    /**
+     * Files constructor.
+     * Initializes the file list.
+     */
+    public function __construct()
     {
-        // save files to transient for 5 minutes
-        $files = get_transient('');
+        $this->files = $this->getAll();
+    }
+
+    /**
+     * Checks if a file exists in the file list.
+     *
+     * @param string $file The file key to check.
+     * @return bool True if the file exists, false otherwise.
+     */
+    public function exists(string $file): bool
+    {
+        return array_key_exists($file, $this->files);
+    }
+
+    /**
+     * Retrieves all files from cache or refreshes the list if not available.
+     *
+     * @return array The list of all files.
+     */
+    public function getAll(bool $refresh = false): array
+    {
+        if ($refresh) {
+            delete_transient('vehicle_sdk_import_library');
+            $files = false;
+        } else {
+            $files = get_transient('vehicle_sdk_import_library');
+        }
+
         if ($files === false) {
             $files = $this->refresh();
-            set_transient('VSDK_files', $files, 300);
+            set_transient('vehicle_sdk_import_library', $files, 300);
         }
         return $files;
     }
@@ -28,28 +67,27 @@ class Files
      *
      * @return array|false Paginated data or false on failure.
      */
-    public function getData(string $file_path, string $delimiter = ',', int $page = 0, int $limit = 10, $header = true)
+    public function getData(string $file_path, string $delimiter = ',', int $page = 0, int $limit = 10, bool $header = true): array|false
     {
         if (!file_exists($file_path)) {
             return false;
         }
 
         $file_handle = fopen($file_path, 'r');
-
         $file_data = [];
 
         if ($page > 0) {
-            // Ensure that the page and limit parameters are valid
             $page = max(1, $page);
             $limit = max(1, $limit);
-
             $current_row = 0;  // Keep track of the current row
             $start_row = ($page - 1) * $limit;  // The first row of the page
 
             if ($header) {
                 // Skip the header row
                 $file_header = fgetcsv($file_handle, 0, $delimiter);
-                $file_data[] = $file_header;
+                if ($file_header !== false) {
+                    $file_data[] = $file_header;
+                }
             }
 
             // Skip rows before the start of the page
@@ -70,7 +108,6 @@ class Files
                 }
             }
         } else {
-
             // Read all rows
             while (($data = fgetcsv($file_handle, 0, $delimiter)) !== false) {
                 $file_data[] = $data;
@@ -82,10 +119,16 @@ class Files
         return $file_data;
     }
 
-    public function getPath($file)
+    /**
+     * Retrieves the file path for a given file key.
+     *
+     * @param string $file The file key to retrieve the path for.
+     * @return string|false The file path or false if it does not exist.
+     */
+    public function getPath(string $file): string|false
     {
         $files = $this->refresh();
-        $file_path = $files[$file];
+        $file_path = $files[$file] ?? '';
 
         if (!file_exists($file_path)) {
             return false;
@@ -94,25 +137,31 @@ class Files
         return $file_path;
     }
 
-    public function getPathInfo($file)
+    /**
+     * Retrieves information about the file's path.
+     *
+     * @param string $file The file key to retrieve information for.
+     * @return array|false The path information or false if the file does not exist.
+     */
+    public function getPathInfo(string $file): array|false
     {
-        $file = $_GET['file'] ?? null;
         $files = $this->refresh();
-
-        $file_path = $files[$file];
-        $file_info = pathinfo($file_path);
-
+        $file_path = $files[$file] ?? '';
         if (!file_exists($file_path)) {
             echo '✘ File does not exist.';
             return false;
         }
 
-        return $file_info;
+        return pathinfo($file_path);
     }
 
-    public function refresh()
+    /**
+     * Refreshes the file list by scanning the uploads directory for CSV, TSV, and JSON files.
+     *
+     * @return array The updated list of files.
+     */
+    public function refresh(): array
     {
-        // check if we have any csv, tsv, or json files in the uploads directory, traverse all subdirectories
         $files = [];
         $dirs = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(ABSPATH . 'wp-content/uploads'));
         foreach ($dirs as $dir) {
@@ -121,7 +170,7 @@ class Files
             }
 
             if (in_array($dir->getExtension(), ['csv', 'tsv', 'json'])) {
-                // store file in array with full path via md5 as key
+                // Store file in array with full path via md5 as key
                 $files[md5($dir->getPathname())] = $dir->getPathname();
             }
         }
