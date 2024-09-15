@@ -52,6 +52,7 @@ class Page
             $this->renderTab($action, $current_tab);
         }
         echo '</h2>';
+        echo '<div style="height: 1rem;"></div>';
     }
 
     /**
