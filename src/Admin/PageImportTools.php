@@ -18,7 +18,6 @@ class PageImportTools extends PageImport
 
     public function adminContent(): void
     {
-        $this->adminCounts();
         $this->adminDebugTools();
         $this->adminRunTools();
         $this->adminFilesGetHeaders();
