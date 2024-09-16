@@ -9,6 +9,7 @@ class Loader
     public function __construct()
     {
         new Admin();
+        new Render();
         new Vehicle();
     }
 }

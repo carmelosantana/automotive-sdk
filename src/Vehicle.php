@@ -19,8 +19,5 @@ class Vehicle
 
         // Setup REST API
         new Api\Vehicles\VehicleApi();
-
-        // Finally setup output rendering after everything is setup
-        new Vehicle\Render();
     }
 }
