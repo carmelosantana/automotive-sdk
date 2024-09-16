@@ -1,7 +1,7 @@
 {
-    "name": "wpautos/vehicles-sdk",
-    "version": "0.1.0",
-    "description": "Import vehicles from various sources.",
+    "name": "wpautos/automotive-sdk",
+    "version": "0.1.3",
+    "description": "Full stack automotive SDK for WordPress.",
     "type": "wordpress-plugin",
     "license": "GNU General Public License v2",
     "authors": [
@@ -12,7 +12,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "WpAutos\\VehiclesSdk\\": "src/"
+            "WpAutos\\AutomotiveSdk\\": "src/"
         }
     },
     "repositories": [
@@ -24,7 +24,6 @@
     "require": {
         "php": "^8.1",
         "composer/installers": "^2.2",
-        "carmelosantana/wp-options": "dev-main",
         "brick/money": "^0.9.0",
         "mustache/mustache": "^2.14"
     },

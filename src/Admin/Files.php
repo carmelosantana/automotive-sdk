@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Admin;
+namespace WpAutos\AutomotiveSdk\Admin;
 
 /**
  * Class Files

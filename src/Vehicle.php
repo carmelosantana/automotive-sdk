@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk;
+namespace WpAutos\AutomotiveSdk;
 
 class Vehicle
 {

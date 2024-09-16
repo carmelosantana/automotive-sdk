@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Api\Vehicles;
+namespace WpAutos\AutomotiveSdk\Api\Vehicles;
 
 class VehicleListApi
 {

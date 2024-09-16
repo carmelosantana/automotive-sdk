@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Admin;
+namespace WpAutos\AutomotiveSdk\Admin;
 
-use WpAutos\VehiclesSdk\Admin\Files;
-use WpAutos\VehiclesSdk\Import\Csv;
-use WpAutos\VehiclesSdk\Import\Mapping;
+use WpAutos\AutomotiveSdk\Admin\Files;
+use WpAutos\AutomotiveSdk\Import\Csv;
+use WpAutos\AutomotiveSdk\Import\Mapping;
 
 class PageImport extends Page
 {
@@ -41,7 +41,7 @@ class PageImport extends Page
 
     public function adminAdditionalScripts(): void
     {
-        wp_enqueue_script('vehicles-import-js', VSDK_DIR_URL . 'assets/js/vehicles-import.js', ['jquery'], null, true);
+        wp_enqueue_script('vehicles-import-js', ASDK_DIR_URL . 'assets/js/vehicles-import.js', ['jquery'], null, true);
         wp_localize_script('vehicles-import-js', 'vehiclesImport', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
         ]);

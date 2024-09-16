@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Vehicle;
+namespace WpAutos\AutomotiveSdk\Vehicle;
 
 class Meta
 {

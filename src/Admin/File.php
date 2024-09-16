@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Admin;
+namespace WpAutos\AutomotiveSdk\Admin;
 
-use WpAutos\VehiclesSdk\Import\Mapping;
+use WpAutos\AutomotiveSdk\Import\Mapping;
 
 /**
  * Handles the loading and processing of file data including headers and templates.

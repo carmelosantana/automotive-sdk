@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Import;
+namespace WpAutos\AutomotiveSdk\Import;
 
-use WpAutos\VehiclesSdk\Admin\File;
+use WpAutos\AutomotiveSdk\Admin\File;
 
 class Csv
 {
