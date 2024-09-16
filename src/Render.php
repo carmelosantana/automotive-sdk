@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk;
+namespace WpAutos\AutomotiveSdk;
 
 use Brick\Money\Money;
 use Mustache_Engine;
-use WpAutos\VehiclesSdk\Vehicle\Fields;
+use WpAutos\AutomotiveSdk\Vehicle\Fields;
 
 /**
  * Class Render

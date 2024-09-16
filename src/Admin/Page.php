@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Admin;
+namespace WpAutos\AutomotiveSdk\Admin;
 
 class Page
 {
     protected $parent_slug = 'edit.php?post_type=vehicle';
-    protected $page_title = 'Vehicles SDK';
-    protected $menu_title = 'Vehicles SDK';
-    protected $page_slug = VSDK;
+    protected $page_title = 'Automotive SDK';
+    protected $menu_title = 'Automotive SDK';
+    protected $page_slug = ASDK;
     protected $page_description = 'Automotive data management.';
     protected $page_actions = [];
 
@@ -22,8 +22,8 @@ class Page
     public function adminEnqueue()
     {
         add_thickbox();
-        wp_enqueue_style('vehicles-sdk-admin', VSDK_DIR_URL . 'assets/css/vehicles-sdk.css');
-        wp_enqueue_script('vehicles-sdk-admin', VSDK_DIR_URL . 'assets/js/vehicles-sdk.js', ['jquery'], null, true);
+        wp_enqueue_style('automotive-sdk-admin', ASDK_DIR_URL . 'assets/css/automotive-sdk.css');
+        wp_enqueue_script('automotive-sdk-admin', ASDK_DIR_URL . 'assets/js/automotive-sdk.js', ['jquery'], null, true);
     }
 
     public function adminMenu()
@@ -108,7 +108,7 @@ class Page
 
     public function generatePageSlug(string $page = ''): string
     {
-        $slug = empty($page) ? VSDK . '-' . $this->page_slug : VSDK . '-' . $page;
+        $slug = empty($page) ? ASDK . '-' . $this->page_slug : ASDK . '-' . $page;
 
         return $slug;
     }

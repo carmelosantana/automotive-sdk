@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Import;
+namespace WpAutos\AutomotiveSdk\Import;
 
 class Mapping
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\VehiclesSdk\Api\Vehicles;
+namespace WpAutos\AutomotiveSdk\Api\Vehicles;
 
-use WpAutos\VehiclesSdk\Vehicle\Fields as VehicleMetaFields;
+use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleMetaFields;
 
 class VehicleFields
 {
