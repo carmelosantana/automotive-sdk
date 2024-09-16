@@ -15,8 +15,11 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 // Defines
 define('VSDK', 'vehicles-sdk');
 define('VSDK_TITLE', 'Vehicles SDK');
+define('VSDK__FILE__', __FILE__);
 define('VSDK_DIR_URL', plugin_dir_url(__FILE__));
 define('VSDK_DIR_PATH', plugin_dir_path(__FILE__));
+define('VSDK_ASSETS_URL', VSDK_DIR_URL . 'assets/');
+define('VSDK_ASSETS_PATH', VSDK_DIR_PATH . 'assets/');
 
 // Composer
 if (!file_exists($composer = plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
