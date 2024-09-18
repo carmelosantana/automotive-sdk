@@ -1,4 +1,3 @@
-# WP Autos
 .ai/
 _builds/
 vendor/
@@ -13,6 +12,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 coverage
 build/Release
 node_modules/
