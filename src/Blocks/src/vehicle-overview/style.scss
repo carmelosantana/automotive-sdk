@@ -1,0 +1,10 @@
+.wp-block-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.wp-block-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5em;
+}

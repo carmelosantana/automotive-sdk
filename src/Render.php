@@ -25,8 +25,33 @@ class Render
         // Start output buffering at the very beginning
         ob_start();
 
+        add_action('enqueue_block_editor_assets', [$this, 'enqueueBlockEditorAssets']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueBlockEditorAssets']);
+
         // On shutdown use Mustache to process our variables
         add_action('shutdown', [$this, 'processFinalOutput'], 0);
+    }
+
+    public function enqueueFontAwesome()
+    {
+        wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css');
+    }
+
+    public function enqueueBlockEditorAssets()
+    {
+        $this->enqueueFontAwesome();
+    }
+
+    public function enqueueMainStyles()
+    {
+        wp_enqueue_style('main-styles', ASDK_ASSETS_URL . '/css/style.css', []);
+    }
+
+    public function enqueueScripts()
+    {
+        $this->enqueueFontAwesome();
+        $this->enqueueMainStyles();
     }
 
     /**
