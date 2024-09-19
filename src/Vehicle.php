@@ -11,6 +11,9 @@ class Vehicle
         // Register Post Type
         new Vehicle\PostType();
 
+        // Vehicle Query
+        new Vehicle\Data();
+
         // Setup metas
         new Vehicle\Meta();
 
