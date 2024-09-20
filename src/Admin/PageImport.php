@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Admin;
 
+use WpAutos\AutomotiveSdk\Admin\File;
 use WpAutos\AutomotiveSdk\Admin\Files;
 use WpAutos\AutomotiveSdk\Import\Csv;
 use WpAutos\AutomotiveSdk\Import\Mapping;
@@ -128,7 +129,6 @@ class PageImport extends Page
         $file = $_REQUEST['file'] ?? null;
 
         if (!$file) {
-            // error_log('No file key provided.');
             return false;
         }
 
@@ -136,7 +136,6 @@ class PageImport extends Page
         $this->file->load($file);
 
         if (!$this->file->isLoaded()) {
-            // error_log('File failed to load: ' . $file);
             return false;
         }
 
@@ -175,15 +174,6 @@ class PageImport extends Page
         echo '</table>';
 
         echo '<br>';
-    }
-
-    public function adminProgress()
-    {
-        echo '<div style="display: flex; align-items: center;">';
-        echo '<div class="progress-wrapper">';
-        echo ' <div id="import-progress" class="progress-bar" style="width: 0%;"></div>';
-        echo '</div>';
-        echo '</div>';
     }
 
     public function adminFileImport()
@@ -396,7 +386,7 @@ class PageImport extends Page
             'template' => [
                 'description' => 'Template',
             ],
-            'view' => [
+            'preview' => [
                 'description' => 'Preview',
             ]
         ];
@@ -420,7 +410,7 @@ class PageImport extends Page
                     'file' => $key,
                     'nonce' => wp_create_nonce($action . $key)
                 ];
-                $row .= '<a href="' . esc_url($this->generatePageUrl('', $args)) . '" class="' . esc_attr($data['class']) . '">' . esc_html($data['description']) . '</a> | ';
+                $row .= '<a href="' . esc_url($this->generatePageUrl('import', $args)) . '" class="' . esc_attr($data['class']) . '">' . esc_html($data['description']) . '</a> | ';
             }
             $row = rtrim($row, ' | ');
             echo $row;

@@ -52,7 +52,7 @@
     margin-top: .5rem;
 }
 
-.wp-autos .progress-bar {
+.wp-autos #progress-bar {
     height: 1em;
     background: linear-gradient(90deg, #0073aa, #9b51e0);
     text-align: center;
@@ -60,7 +60,6 @@
     line-height: 1em;
     border-radius: 5px;
     font-size: .9em;
-    padding: 2px 0
-    ;
+    padding: 2px 0;
     transition: width 0.33s ease;
 }
