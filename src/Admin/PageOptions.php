@@ -6,13 +6,15 @@ namespace WpAutos\AutomotiveSdk\Admin;
 
 class PageOptions extends Page
 {
+    private string $current_tab;
+    private string $default_tab;
+
     protected $page_slug = 'options';
     protected $page_title = 'Options';
     protected $menu_title = 'Options';
     protected $page_description = 'Manage settings and options for the plugin.';
 
-    // Define the tabs
-    protected $tabs = [
+    protected array $tabs = [
         'dealer' => 'Dealer',
         'license' => 'License',
     ];
@@ -21,6 +23,15 @@ class PageOptions extends Page
     {
         parent::__construct();
         add_action('admin_init', [$this, 'registerSettings']);
+
+        // set default tab
+        $this->default_tab = array_key_first($this->tabs);
+
+        // get current tab
+        $tab = $_REQUEST['tab'] ?? $this->default_tab;
+
+        // set current tab
+        $this->current_tab = in_array($tab, array_keys($this->tabs)) ? $tab : $this->default_tab;
     }
 
     public function adminContent(): void
@@ -52,16 +63,13 @@ class PageOptions extends Page
 
     /**
      * Registers the settings fields in WordPress.
-     * Only display fields per the current tab.
      */
     public function registerSettings(): void
     {
         $fields = $this->defineFields();
 
         foreach ($fields as $section => $data) {
-            $current = $_GET['tab'] ?? 'dealer';
-
-            if ($current !== $section) {
+            if ($this->current_tab !== $section) {
                 continue;
             }
 
@@ -82,6 +90,7 @@ class PageOptions extends Page
                     $field
                 );
 
+                // Ensure the settings are registered under the correct options group
                 register_setting('automotivesdk_options', $field['name']);
             }
         }
@@ -147,6 +156,9 @@ class PageOptions extends Page
         }
     }
 
+    /**
+     * Renders the options form.
+     */
     protected function renderOptions(): void
     {
 ?>
@@ -154,6 +166,7 @@ class PageOptions extends Page
             <?php
             settings_fields('automotivesdk_options');
             do_settings_sections('automotivesdk-options');
+            echo '<input type="hidden" name="tab" value="' . esc_attr($_GET['tab'] ?? '') . '" />';
             submit_button();
             ?>
         </form>
