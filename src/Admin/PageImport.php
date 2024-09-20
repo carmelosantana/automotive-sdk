@@ -100,7 +100,7 @@ class PageImport extends Page
                 $this->adminFileInfo();
                 break;
 
-            case 'view':
+            case 'preview':
                 $this->adminFileView();
                 break;
 
