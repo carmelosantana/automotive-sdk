@@ -6,9 +6,11 @@ namespace WpAutos\AutomotiveSdk\Admin;
 
 class Page
 {
-    protected $parent_slug = 'edit.php?post_type=vehicle';
+    protected $parent_slug = ASDK;
+    protected $page_icon = 'dashicons-database';
     protected $page_title = 'Automotive SDK';
     protected $menu_title = 'Automotive SDK';
+    protected $menu_position = 50;
     protected $page_slug = ASDK;
     protected $page_description = 'Automotive data management.';
     protected $page_actions = [];
@@ -19,23 +21,29 @@ class Page
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueue']);
     }
 
-    public function adminEnqueue()
+    /**
+     * Adds an admin menu separator at the specified position.
+     * 
+     * Original author: https://wordpress.stackexchange.com/a/2674
+     *
+     * @param int $position The position to add the separator.
+     * @return void
+     */
+    public function addAdminMenuSeparator(int $position): void
     {
-        add_thickbox();
-        wp_enqueue_style('automotive-sdk-admin', ASDK_DIR_URL . 'assets/css/automotive-sdk.css');
-        wp_enqueue_script('automotive-sdk-admin', ASDK_DIR_URL . 'assets/js/automotive-sdk.js', ['jquery'], null, true);
-    }
+        global $menu;
+        $index = 0;
 
-    public function adminMenu()
-    {
-        add_submenu_page(
-            $this->parent_slug,
-            $this->page_title,
-            $this->menu_title,
-            'manage_options',
-            $this->generatePageSlug(),
-            [$this, 'adminPage']
-        );
+        foreach ($menu as $offset => $section) {
+            if (substr($section[2], 0, 9) === 'separator') {
+                $index++;
+            }
+            if ($offset >= $position) {
+                $menu[$position] = ['', 'read', "separator{$index}", '', 'wp-menu-separator'];
+                break;
+            }
+        }
+        ksort($menu);
     }
 
     public function adminActionsList(): void
@@ -62,6 +70,14 @@ class Page
      */
     public function adminContent(): void {}
 
+
+    public function adminEnqueue()
+    {
+        add_thickbox();
+        wp_enqueue_style('automotive-sdk-admin', ASDK_DIR_URL . 'assets/css/automotive-sdk.css');
+        wp_enqueue_script('automotive-sdk-admin', ASDK_DIR_URL . 'assets/js/automotive-sdk.js', ['jquery'], null, true);
+    }
+
     /**
      * Renders the footer for the admin page.
      *
@@ -78,6 +94,8 @@ class Page
         echo '<div class="wp-autos wrap">';
         echo '<h1>' . esc_html($this->page_title) . '</h1>';
 
+        $this->adminProgress();
+
         if (!empty($this->page_description)) {
             echo '<p>' . esc_html($this->page_description) . '</p>';
         }
@@ -85,6 +103,25 @@ class Page
         $this->adminActionsList();
 
         echo '<hr class="wp-header-end">';
+    }
+
+    public function adminMenu()
+    {
+        add_submenu_page(
+            $this->parent_slug,
+            $this->page_title,
+            $this->menu_title,
+            'manage_options',
+            $this->generatePageSlug(),
+            [$this, 'adminPage']
+        );
+    }
+
+    private function iterateMenuPosition(): int
+    {
+        $this->menu_position++;
+
+        return $this->menu_position;
     }
 
     public function adminNotice($message, $notice = 'notice-success')
@@ -101,6 +138,15 @@ class Page
         $this->adminFooter();
     }
 
+    public function adminProgress()
+    {
+        echo '<div style="display: flex; align-items: center;">';
+        echo '<div class="progress-wrapper">';
+        echo ' <div id="progress-bar" class="progress-bar" style="width: 0%;"></div>';
+        echo '</div>';
+        echo '</div>';
+    }
+
     public function generateAjaxUrl(string $action): string
     {
         return admin_url('admin-ajax.php?action=' . $action);
@@ -115,9 +161,12 @@ class Page
 
     public function generatePageUrl(string $page, array $args = []): string
     {
-        $args['page'] = $this->generatePageSlug($page);
+        return add_query_arg($args, admin_url('admin.php?page=' . $this->generatePageSlug($page)));
+    }
 
-        return add_query_arg($args, admin_url($this->parent_slug));
+    public function shutdown(): void
+    {
+        exit;
     }
 
     private function renderTab(array $action, string $current_tab): void

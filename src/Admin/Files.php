@@ -169,7 +169,7 @@ class Files
                 continue;
             }
 
-            if (in_array($dir->getExtension(), ['csv', 'tsv', 'json'])) {
+            if (in_array($dir->getExtension(), ['csv', 'tsv'])) {
                 // Store file in array with full path via md5 as key
                 $files[md5($dir->getPathname())] = $dir->getPathname();
             }

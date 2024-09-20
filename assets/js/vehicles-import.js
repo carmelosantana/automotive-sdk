@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
     const progressWrapper = $('.progress-wrapper');
-    const importProgress = $('#import-progress');
+    const importProgress = $('#progress-bar');
 
     // Handle click events for the import links
     $(document).on('click', '.start-import-link', function (event) {
@@ -48,7 +48,7 @@ jQuery(document).ready(function ($) {
 
     function updateProgressAndShowAlert() {
         // Update the progress to 100%
-        document.getElementById('import-progress').style.width = '100%';
+        document.getElementById('progress-bar').style.width = '100%';
 
         // Use a small timeout to ensure the DOM updates before the alert is shown
         setTimeout(function () {

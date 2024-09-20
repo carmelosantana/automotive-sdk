@@ -8,8 +8,12 @@ class Admin
 {
     public function __construct()
     {
+        // Load first to setup admin menu
+        new Admin\PageDashboard();
         new Admin\PageImport();
         new Admin\PageImportTools();
+        new Admin\PageExport();
+        new Admin\PageOptions();
 
         add_filter('upload_mimes', [$this, 'allowUploadMimes']);
     }

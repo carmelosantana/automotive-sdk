@@ -57,6 +57,7 @@ class PostType
             'supports' => ['title', 'editor', 'thumbnail'],
             'menu_icon' => 'dashicons-car',
             'taxonomies' => ['make', 'model', 'trim', 'year', 'special'],
+            'menu_position' => 52,
         ]);
     }
 

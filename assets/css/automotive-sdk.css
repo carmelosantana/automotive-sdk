@@ -47,14 +47,19 @@
 .wp-autos .progress-wrapper {
     display: none;
     width: 100%;
+    background-color: white;
+    border-radius: 5px;
+    margin-top: .5rem;
 }
 
-.wp-autos .progress-bar {
-    height: 26px;
+.wp-autos #progress-bar {
+    height: 1em;
     background: linear-gradient(90deg, #0073aa, #9b51e0);
     text-align: center;
     color: white;
-    line-height: 26px !important;
+    line-height: 1em;
     border-radius: 5px;
+    font-size: .9em;
+    padding: 2px 0;
     transition: width 0.33s ease;
 }
