@@ -11,10 +11,6 @@ class PageExport extends Page
     protected $page_slug = 'export';
     protected $page_title = 'Export';
     protected $menu_title = 'Export';
-    protected $page_description = 'Utilities for exporting vehicle datasets.';
-    protected $page_actions = [
-        ['page' => 'export', 'description' => 'Export'],
-    ];
 
     public function __construct()
     {
@@ -26,7 +22,7 @@ class PageExport extends Page
 
     public function adminContent(): void
     {
-        echo '<h2>Export Options</h2>';
+        echo '<h3>All Vehicles</h3>';
         $this->adminExportList();
     }
 

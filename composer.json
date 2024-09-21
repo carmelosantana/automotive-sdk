@@ -1,6 +1,6 @@
 {
     "name": "wpautos/automotive-sdk",
-    "version": "0.1.3",
+    "version": "0.1.5",
     "description": "Full stack automotive SDK for WordPress.",
     "type": "wordpress-plugin",
     "license": "GNU General Public License v2",

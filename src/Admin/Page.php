@@ -12,13 +12,29 @@ class Page
     protected $menu_title = 'Automotive SDK';
     protected $menu_position = 50;
     protected $page_slug = ASDK;
-    protected $page_description = 'Automotive data management.';
+    protected $page_description = '';
+
+    /**
+     * Actions:
+     * - Can be set via ?page or ?tab query parameters.
+     * - Page actions create new sub pages.
+     * - Tab actions are used to switch between tabs on the same page.
+     * 
+     */
     protected $page_actions = [];
+    protected $tab_actions = [];
+
+    protected $tab_type;
+    protected $current_tab;
+    protected $default_tab;
 
     public function __construct()
     {
         add_action('admin_menu', [$this, 'adminMenu']);
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueue']);
+
+        $this->setupTabType();
+        $this->setupCurrentTab();
     }
 
     /**
@@ -48,16 +64,17 @@ class Page
 
     public function adminActionsList(): void
     {
-        if (empty($this->page_actions)) {
-            return;
-        }
-
-        // Use the current tab from the URL if not provided
-        $current_tab = $_GET['page'] ?? '';
-
         echo '<h2 class="nav-tab-wrapper">';
-        foreach ($this->page_actions as $action) {
-            $this->renderTab($action, $current_tab);
+        foreach ($this->getActions() as $slug => $title) {
+            switch ($this->tab_type) {
+                case 'page':
+                    $this->renderPageTab($slug, $title);
+                    break;
+
+                case 'tab':
+                    $this->renderTab($slug, $title);
+                    break;
+            }
         }
         echo '</h2>';
         echo '<div style="height: 1rem;"></div>';
@@ -70,6 +87,12 @@ class Page
      */
     public function adminContent(): void {}
 
+    /**
+     * Placeholder function for rendering counters.
+     *
+     * @return void
+     */
+    public function adminCounts(): void {}
 
     public function adminEnqueue()
     {
@@ -92,7 +115,10 @@ class Page
     public function adminHeader(): void
     {
         echo '<div class="wp-autos wrap">';
-        echo '<h1>' . esc_html($this->page_title) . '</h1>';
+        echo '<h1 class="wp-heading-inline">' . esc_html($this->page_title);
+        echo '</h1>';
+
+        $this->adminCounts();
 
         $this->adminProgress();
 
@@ -100,7 +126,9 @@ class Page
             echo '<p>' . esc_html($this->page_description) . '</p>';
         }
 
-        $this->adminActionsList();
+        if (!empty($this->getActions())) {
+            $this->adminActionsList();
+        }
 
         echo '<hr class="wp-header-end">';
     }
@@ -161,7 +189,20 @@ class Page
 
     public function generatePageUrl(string $page, array $args = []): string
     {
-        return add_query_arg($args, admin_url('admin.php?page=' . $this->generatePageSlug($page)));
+        $args = [
+            'page' => $this->generatePageSlug($page),
+        ];
+        return add_query_arg($args, admin_url('admin.php'));
+    }
+
+    public function generateTabUrl(string $page, array $additional = []): string
+    {
+        $args = [
+            'page' => $this->generatePageSlug($this->page_slug),
+            'tab' => $page,
+        ];
+        
+        return add_query_arg(array_merge($args, $additional), admin_url('admin.php'));
     }
 
     public function shutdown(): void
@@ -169,9 +210,51 @@ class Page
         exit;
     }
 
-    private function renderTab(array $action, string $current_tab): void
+    private function renderTab(string $tab_key, string $tab_label): void
     {
-        $is_active = ($current_tab === $this->generatePageSlug($action['page'])) ? 'nav-tab-active' : '';
-        echo '<a href="' . esc_url($this->generatePageUrl($action['page'])) . '" class="nav-tab ' . esc_attr($is_active) . '">' . esc_html($action['description']) . '</a>';
+        $is_active = ($this->current_tab === $tab_key) ? 'nav-tab-active' : '';
+        echo '<a href="' . esc_url($this->generateTabUrl($tab_key)) . '" class="nav-tab ' . esc_attr($is_active) . '">' . esc_html($tab_label) . '</a>';
+    }
+
+    private function renderPageTab(string $page, string $label): void
+    {
+        $is_active = ($this->current_tab === $this->generatePageSlug($page)) ? 'nav-tab-active' : '';
+        echo '<a href="' . esc_url($this->generatePageUrl($page)) . '" class="nav-tab ' . esc_attr($is_active) . '">' . esc_html($label) . '</a>';
+    }
+
+    private function getActions(): array
+    {
+        switch ($this->tab_type) {
+            case 'page':
+                return $this->page_actions;
+
+            case 'tab':
+                return $this->tab_actions;
+        }
+
+        return [];
+    }
+
+    private function setupTabType()
+    {
+        if (!empty($this->page_actions)) {
+            $this->tab_type = 'page';
+        } elseif (!empty($this->tab_actions)) {
+            $this->tab_type = 'tab';
+        }
+    }
+
+    private function setupCurrentTab(): void
+    {
+        $actions = $this->getActions();
+
+        // set default tab
+        $this->default_tab = array_key_first($actions);
+
+        // get current tab
+        $tab = isset($_REQUEST[$this->tab_type]) ? sanitize_text_field($_REQUEST[$this->tab_type]) : $this->default_tab;
+
+        // set current tab
+        $this->current_tab = in_array($tab, array_keys($actions)) ? $tab : $this->default_tab;
     }
 }

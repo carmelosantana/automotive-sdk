@@ -11,7 +11,6 @@ class Admin
         // Load first to setup admin menu
         new Admin\PageDashboard();
         new Admin\PageImport();
-        new Admin\PageImportTools();
         new Admin\PageExport();
         new Admin\PageOptions();
 

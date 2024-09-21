@@ -6,16 +6,6 @@ namespace WpAutos\AutomotiveSdk\Admin;
 
 class PageImportTools extends PageImport
 {
-    protected $page_slug = 'debug';
-    protected $page_title = 'Debug';
-    protected $menu_title = '↳ Debug';
-    protected $page_description = 'Delete all vehicles, refresh files, check headers.';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function adminContent(): void
     {
         $this->adminDebugTools();
@@ -33,7 +23,7 @@ class PageImportTools extends PageImport
         $out = '<div>';
 
         foreach ($actions as $action => $description) {
-            $out .= '<a href="' . admin_url('admin.php?page=' . $this->generatePageSlug() . '&tool=' . $action) . '" class="button">' . $description . '</a> ';
+            $out .= '<a href="' . $this->generateTabUrl('tools', ['tool' => $action]) . '" class="button">' . $description . '</a> ';
         }
 
         $out .= '</div>';

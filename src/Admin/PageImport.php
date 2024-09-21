@@ -14,10 +14,11 @@ class PageImport extends Page
     protected $page_slug = 'import';
     protected $page_title = 'Import';
     protected $menu_title = 'Import';
-    protected $page_description = 'Utilities for interacting with multiple vehicle datasets.';
-    protected $page_actions = [
-        ['page' => 'import', 'description' => 'Import'],
-        ['page' => 'debug', 'description' => 'Debug'],
+    protected $page_description = 'Utilities for interacting with multiple vehicle datasets. Files uploaded to your media library are filtered and listed below.';
+
+    protected $tab_actions = [
+        'import' => 'Import',
+        'tools' => 'Tools',
     ];
 
     public $actions_separator = ' • ';
@@ -88,6 +89,21 @@ class PageImport extends Page
     }
 
     public function adminContent(): void
+    {
+        // switch tabs
+        switch ($this->current_tab) {
+            case 'tools':
+                $tools = new PageImportTools();
+                $tools->adminContent();
+                break;
+
+            default:
+                $this->doAction();
+                break;
+        }
+    }
+
+    public function doAction()
     {
         switch ($_GET['action'] ?? null) {
             case 'import':
@@ -320,25 +336,6 @@ class PageImport extends Page
             ]);
             echo '<p>Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
         }
-    }
-
-    public function adminHeader(): void
-    {
-        echo '<div class="wp-autos wrap">';
-        echo '<h1 class="wp-heading-inline">' . esc_html($this->page_title);
-        echo '</h1>';
-
-        $this->adminCounts();
-
-        $this->adminProgress();
-
-        if (!empty($this->page_description)) {
-            echo '<p>' . esc_html($this->page_description) . '</p>';
-        }
-
-        $this->adminActionsList();
-
-        echo '<hr class="wp-header-end">';
     }
 
     // output inline js

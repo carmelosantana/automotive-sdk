@@ -6,15 +6,11 @@ namespace WpAutos\AutomotiveSdk\Admin;
 
 class PageOptions extends Page
 {
-    private string $current_tab;
-    private string $default_tab;
-
     protected $page_slug = 'options';
     protected $page_title = 'Options';
     protected $menu_title = 'Options';
-    protected $page_description = 'Manage settings and options for the plugin.';
 
-    protected array $tabs = [
+    protected $tab_actions = [
         'dealer' => 'Dealer',
         'license' => 'License',
     ];
@@ -23,38 +19,11 @@ class PageOptions extends Page
     {
         parent::__construct();
         add_action('admin_init', [$this, 'registerSettings']);
-
-        // set default tab
-        $this->default_tab = array_key_first($this->tabs);
-
-        // get current tab
-        $tab = $_REQUEST['tab'] ?? $this->default_tab;
-
-        // set current tab
-        $this->current_tab = in_array($tab, array_keys($this->tabs)) ? $tab : $this->default_tab;
     }
 
     public function adminContent(): void
     {
-        $current_tab = $_GET['tab'] ?? 'dealer';
-        echo '<h2 class="nav-tab-wrapper">';
-        foreach ($this->tabs as $tab_key => $tab_label) {
-            $active_class = ($current_tab === $tab_key) ? 'nav-tab-active' : '';
-            echo '<a href="' . esc_url($this->generatePageUrl('', ['tab' => $tab_key])) . '" class="nav-tab ' . esc_attr($active_class) . '">' . esc_html($tab_label) . '</a>';
-        }
-        echo '</h2>';
-
-        $this->renderTabContent($current_tab);
-    }
-
-    /**
-     * Renders the content for the current tab.
-     *
-     * @param string $tab The current tab.
-     */
-    protected function renderTabContent(string $tab): void
-    {
-        switch ($tab) {
+        switch ($this->current_tab) {
             default:
                 $this->renderOptions();
                 break;

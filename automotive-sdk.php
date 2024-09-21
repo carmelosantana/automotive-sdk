@@ -3,7 +3,7 @@
 Plugin Name: Automotive SDK
 Plugin URI: https://wpautos.dev
 Description: Automotive inventory management system for WordPress.
-Version: 0.1.4
+Version: 0.1.5
 Author: Carmelo Santana
 Author URI: https://carmelosantana.com
 License: GNU General Public License v2 or later
@@ -20,6 +20,7 @@ define('ASDK_DIR_URL', plugin_dir_url(__FILE__));
 define('ASDK_DIR_PATH', plugin_dir_path(__FILE__));
 define('ASDK_ASSETS_URL', ASDK_DIR_URL . 'assets/');
 define('ASDK_ASSETS_PATH', ASDK_DIR_PATH . 'assets/');
+define('ASDK_VERSION', '0.1.5');
 
 // Composer
 if (!file_exists($composer = plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
