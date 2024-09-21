@@ -105,32 +105,32 @@ class PageOptions extends Page
     {
         return [
             'dealer' => [
-                'section_title' => __('Dealer Settings', 'automotivesdk'),
+                'section_title' => __('Dealer Settings', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'dealer_name',
                         'type' => 'text',
-                        'label' => __('Dealer Name', 'automotivesdk'),
+                        'label' => __('Dealer Name', 'automotive-sdk'),
                     ],
                     [
                         'name' => 'dealer_address',
                         'type' => 'text',
-                        'label' => __('Dealer Address', 'automotivesdk'),
+                        'label' => __('Dealer Address', 'automotive-sdk'),
                     ],
                     [
                         'name' => 'dealer_description',
                         'type' => 'textarea',
-                        'label' => __('Dealer Description', 'automotivesdk'),
+                        'label' => __('Dealer Description', 'automotive-sdk'),
                     ],
                 ],
             ],
             'license' => [
-                'section_title' => __('License Settings', 'automotivesdk'),
+                'section_title' => __('License Settings', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'license_key',
                         'type' => 'text',
-                        'label' => __('License Key', 'automotivesdk'),
+                        'label' => __('License Key', 'automotive-sdk'),
                     ],
                 ],
             ],
