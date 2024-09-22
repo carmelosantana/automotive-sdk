@@ -9,6 +9,7 @@ class PageOptions extends Page
     protected $page_slug = 'options';
     protected $page_title = 'Options';
     protected $menu_title = 'Options';
+    protected $sub_menu_position = 15;
 
     protected $tab_actions = [
         'dealer' => 'Dealer',

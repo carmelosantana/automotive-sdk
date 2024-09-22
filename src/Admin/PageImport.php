@@ -7,7 +7,6 @@ namespace WpAutos\AutomotiveSdk\Admin;
 use WpAutos\AutomotiveSdk\Admin\File;
 use WpAutos\AutomotiveSdk\Admin\Files;
 use WpAutos\AutomotiveSdk\Import\Csv;
-use WpAutos\AutomotiveSdk\Import\Mapping;
 
 class PageImport extends Page
 {
@@ -15,6 +14,7 @@ class PageImport extends Page
     protected $page_title = 'Import';
     protected $menu_title = 'Import';
     protected $page_description = 'Utilities for interacting with multiple vehicle datasets. Files uploaded to your media library are filtered and listed below.';
+    protected $sub_menu_position = 5;
 
     protected $tab_actions = [
         'import' => 'Import',

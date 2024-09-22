@@ -11,6 +11,7 @@ class PageDashboard extends Page
     protected $page_description = 'Welcome to the Automotive SDK Dashboard.';
     protected $page_title = 'Dashboard';
     protected $menu_title = 'Automotive SDK';
+    protected $sub_menu_position = 0;
 
     public function __construct()
     {
@@ -27,7 +28,7 @@ class PageDashboard extends Page
             ASDK,
             [$this, 'adminPage'],
             $this->page_icon,
-            $this->menu_position
+            $this->parent_menu_position
         );
 
         add_submenu_page(
@@ -36,7 +37,8 @@ class PageDashboard extends Page
             'Dashboard',
             'manage_options',
             ASDK,
-            [$this, 'adminPage']
+            [$this, 'adminPage'],
+            $this->sub_menu_position
         );
     }
 

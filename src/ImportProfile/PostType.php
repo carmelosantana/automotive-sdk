@@ -28,7 +28,7 @@ class PostType
             'search_items' => __('Search Import Profiles'),
             'not_found' => __('No Import Profiles found'),
             'not_found_in_trash' => __('No Import Profiles found in Trash'),
-            'all_items' => __('All Import Profiles'),
+            'all_items' => __('Import Profiles'),
             'archives' => __('Import Profile Archives'),
             'attributes' => __('Import Profile Attributes'),
             'insert_into_item' => __('Insert into Import Profile'),
@@ -68,8 +68,9 @@ class PostType
             'rewrite' => ['slug' => 'import-profiles'],
             'show_in_rest' => true,
             'supports' => ['title'],
-            'menu_icon' => 'dashicons-upload',
+            // 'menu_icon' => 'dashicons-upload',
             'show_in_menu' => ASDK,
+            // 'menu_position' => 6,
         ];
 
         register_post_type('import-profile', $args);

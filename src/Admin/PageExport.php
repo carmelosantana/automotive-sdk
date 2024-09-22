@@ -11,6 +11,7 @@ class PageExport extends Page
     protected $page_slug = 'export';
     protected $page_title = 'Export';
     protected $menu_title = 'Export';
+    protected $sub_menu_position = 10;
 
     public function __construct()
     {

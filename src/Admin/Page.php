@@ -10,7 +10,8 @@ class Page
     protected $page_icon = 'dashicons-database';
     protected $page_title = 'Automotive SDK';
     protected $menu_title = 'Automotive SDK';
-    protected $menu_position = 50;
+    protected $parent_menu_position = 50;
+    protected $sub_menu_position = null;
     protected $page_slug = ASDK;
     protected $page_description = '';
 
@@ -141,15 +142,9 @@ class Page
             $this->menu_title,
             'manage_options',
             $this->generatePageSlug(),
-            [$this, 'adminPage']
+            [$this, 'adminPage'],
+            $this->parent_menu_position
         );
-    }
-
-    private function iterateMenuPosition(): int
-    {
-        $this->menu_position++;
-
-        return $this->menu_position;
     }
 
     public function adminNotice($message, $notice = 'notice-success')
