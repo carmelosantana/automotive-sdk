@@ -381,11 +381,16 @@ class PageImport extends Page
 
         $row_actions = [
             'template' => [
-                'description' => 'Template',
+                'label' => 'Template',
             ],
             'preview' => [
-                'description' => 'Preview',
-            ]
+                'label' => 'Preview',
+            ],
+            'make-mapping' => [
+                'label' => 'Make Mapping',
+                'url' => 'post-new.php',
+                'post_type' => 'import-profile',  // Adjusted to point to the correct post type
+            ],
         ];
 
         foreach ($this->Files->getAll() as $key => $file) {
@@ -404,10 +409,23 @@ class PageImport extends Page
             foreach ($row_actions as $action => $data) {
                 $args = [
                     'action' => $action,
-                    'file' => $key,
-                    'nonce' => wp_create_nonce($action . $key)
+                    'file' => $key,  // Pass the file hash as a query parameter
+                    'nonce' => wp_create_nonce($action . $key),
                 ];
-                $row .= '<a href="' . esc_url($this->generatePageUrl('import', $args)) . '" class="' . esc_attr($data['class']) . '">' . esc_html($data['description']) . '</a> | ';
+
+                // Check if the 'url' key is set, use the provided URL
+                if (isset($data['url'])) {
+                    // Use the provided URL and append necessary query parameters like the file hash
+                    $custom_url = add_query_arg([
+                        'post_type' => $data['post_type'] ?? '',  // Ensure post_type is set if needed
+                        'file' => $key,  // File hash
+                    ], admin_url($data['url']));
+
+                    $row .= '<a href="' . esc_url($custom_url) . '" class="' . esc_attr($data['class'] ?? '') . '">' . esc_html($data['label']) . '</a> | ';
+                } else {
+                    // Fallback to the default URL generation if no custom URL is set
+                    $row .= '<a href="' . esc_url($this->generateTabUrl('import', $args)) . '" class="' . esc_attr($data['class'] ?? '') . '">' . esc_html($data['label']) . '</a> | ';
+                }
             }
             $row = rtrim($row, ' | ');
             echo $row;
