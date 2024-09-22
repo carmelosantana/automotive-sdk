@@ -12,8 +12,9 @@ class Meta
     public function __construct()
     {
         add_action('add_meta_boxes', [$this, 'registerMetaBox']);
-        add_action('save_post_import_profile', [$this, 'saveMetaBox']);
-        add_action('save_post_import_profile', [$this, 'saveFile']);
+        add_action('save_post_import-profile', [$this, 'saveMetaBox']);
+        add_action('wp_ajax_get_file_headers', [$this, 'getFileHeaders']); // AJAX handler
+        add_action('admin_enqueue_scripts', [$this, 'enqueueScripts']); // Enqueue JavaScript
     }
 
     /**
@@ -21,7 +22,7 @@ class Meta
      */
     public function registerMetaBox(): void
     {
-        // Register metabox on the side for files
+        // Register meta box for file selection
         add_meta_box(
             'import_files',
             __('CSV Files', 'wp-autos'),
@@ -31,7 +32,7 @@ class Meta
             'default'
         );
 
-        // Register meta box for vehicle mapping
+        // Register meta box for CSV to Meta Mapping
         add_meta_box(
             'import_profile_mapping',
             __('CSV to Meta Mapping', 'wp-autos'),
@@ -43,27 +44,30 @@ class Meta
     }
 
     /**
-     * Renders the file selection meta box with support for multiple file selection.
-     *
-     * @param \WP_Post $post The post object.
+     * Enqueues JavaScript for handling file changes and AJAX requests.
+     */
+    public function enqueueScripts(): void
+    {
+        wp_enqueue_script('meta-ajax-script', plugins_url('/assets/js/meta-files.js', ASDK__FILE__), ['jquery'], null, true);
+        wp_localize_script('meta-ajax-script', 'metaAjax', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+        ]);
+    }
+
+    /**
+     * Renders the file selection meta box.
      */
     public function renderFilesMetaBox(\WP_Post $post): void
     {
         $files_instance = new Files();
         $files = $files_instance->getAll();
 
-        // Get the saved file(s) from post meta
+        // Get the saved files from post meta (allow multiple selections)
         $selected_files = get_post_meta($post->ID, '_csv_file', true) ?: [];
 
-        // If a file query parameter is provided, automatically select the file
-        $file_from_query = $_GET['file'] ?? '';
-        if ($file_from_query && !in_array($file_from_query, $selected_files)) {
-            $selected_files[] = $file_from_query;
-        }
-
-        // Render the select box for multiple file selection
 ?>
-        <select name="csv_file[]" multiple="multiple" style="width: 100%;">
+        <select name="csv_file[]" id="csv_file" multiple="multiple" style="width: 100%;">
+            <option value=""><?php _e('Select files', 'wp-autos'); ?></option>
             <?php foreach ($files as $md5 => $path): ?>
                 <option value="<?php echo esc_attr($md5); ?>" <?php echo in_array($md5, $selected_files) ? 'selected' : ''; ?>>
                     <?php echo esc_html(basename($path)); ?>
@@ -76,22 +80,13 @@ class Meta
 
     /**
      * Renders the meta box for CSV to Meta Mapping.
-     *
-     * @param \WP_Post $post The post object.
      */
     public function renderMetaBox(\WP_Post $post): void
     {
-        // Get the saved mapping from post meta
         $mapping = get_post_meta($post->ID, '_csv_meta_mapping', true) ?: [];
-
-        // Get vehicle fields
         $vehicleFields = new VehicleFields();
         $fields = $vehicleFields->getFields();
 
-        // Assume the selected file headers are already loaded
-        $csv_headers = ['Header1', 'Header2', 'Header3']; // Placeholder
-
-        // Render the table with meta fields and CSV headers
     ?>
         <table class="form-table">
             <thead>
@@ -100,18 +95,14 @@ class Meta
                     <th><?php _e('CSV Column', 'wp-autos'); ?></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="meta-mapping">
                 <?php foreach ($fields as $meta_key => $meta_info): ?>
                     <tr>
                         <td><?php echo esc_html($meta_key); ?></td>
                         <td>
-                            <select name="csv_meta_mapping[<?php echo esc_attr($meta_key); ?>][csv]" class="widefat">
+                            <select name="csv_meta_mapping[<?php echo esc_attr($meta_key); ?>][csv]" class="widefat meta-dropdown">
                                 <option value=""><?php _e('Select a CSV column', 'wp-autos'); ?></option>
-                                <?php foreach ($csv_headers as $header): ?>
-                                    <option value="<?php echo esc_attr($header); ?>" <?php selected($mapping[$meta_key]['csv'] ?? '', $header); ?>>
-                                        <?php echo esc_html($header); ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                <!-- This will be populated dynamically based on selected file(s) -->
                             </select>
                         </td>
                     </tr>
@@ -123,25 +114,54 @@ class Meta
 
     /**
      * Saves the meta box data when the post is saved.
-     *
-     * @param int $post_id The post ID.
      */
     public function saveMetaBox(int $post_id): void
     {
-        if (array_key_exists('csv_meta_mapping', $_POST)) {
-            update_post_meta($post_id, '_csv_meta_mapping', $_POST['csv_meta_mapping']);
+        // Ensure the request came from the correct post type
+        if (!isset($_POST['post_type']) or 'import-profile' !== $_POST['post_type']) {
+            return;
+        }
+
+        // Ensure we are processing the file selection data, and save file data
+        if (isset($_POST['csv_file']) and is_array($_POST['csv_file'])) {
+            // Sanitize and save the file selection data
+            $csv_file = array_map('sanitize_text_field', $_POST['csv_file']);
+            update_post_meta($post_id, '_csv_file', $csv_file);
+        }
+
+        // Ensure we are processing the meta mapping data, and save mapping data
+        if (isset($_POST['csv_meta_mapping']) and is_array($_POST['csv_meta_mapping'])) {
+            // Sanitize and save the meta mapping data
+            $csv_meta_mapping = array_map(function ($mapping) {
+                return array_map('sanitize_text_field', $mapping); // Sanitize each input field
+            }, $_POST['csv_meta_mapping']);
+
+            update_post_meta($post_id, '_csv_meta_mapping', $csv_meta_mapping);
         }
     }
 
     /**
-     * Saves the selected files when the post is saved.
-     *
-     * @param int $post_id The post ID.
+     * AJAX handler to get file headers.
      */
-    public function saveFile(int $post_id): void
+    public function getFileHeaders(): void
     {
-        if (array_key_exists('csv_file', $_POST)) {
-            update_post_meta($post_id, '_csv_file', $_POST['csv_file']);
+        if (!isset($_POST['files']) || empty($_POST['files'])) {
+            wp_send_json_error('No files selected');
+            return;
         }
+
+        $files = (array) $_POST['files'];  // Get the array of file hashes
+        $headers = [];
+
+        foreach ($files as $file_hash) {
+            $file = new \WpAutos\AutomotiveSdk\Admin\File();
+            $file->load($file_hash);  // Load the file using its hash
+
+            if ($file->isLoaded()) {
+                $headers = array_merge($headers, $file->getHeader());  // Merge headers from all selected files
+            }
+        }
+
+        wp_send_json_success(['headers' => array_unique($headers)]);  // Return unique headers
     }
 }
