@@ -13,22 +13,46 @@ class PageImportTools extends PageImport
         $this->adminFilesGetHeaders();
     }
 
-    public function adminDebugTools()
+    public function adminDebugTools(): void
     {
         $actions = [
-            'delete_all_vehicles' => 'Delete All Vehicles',
-            'refresh_files' => 'Refresh Files',
+            [
+                'description' => 'Deletes all vehicles, retains images.',
+                'label' => 'Delete All Vehicles',
+                'args' => [
+                    'tool' => 'delete_all_vehicles'
+                ]
+            ],
+            [
+                'description' => 'Refreshes the file library.',
+                'label' => 'Refresh Files',
+                'args' => [
+                    'tab' => 'import',
+                    'tool' => 'refresh_files',
+                ]
+            ],
         ];
 
-        $out = '<div>';
+        echo '<table class="wp-list-table widefat fixed striped" style="width: 100%;">';
+        echo '<thead>';
+        echo '<tr>';
+        echo '<th>Description</th>';
+        echo '<th>Action</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
 
-        foreach ($actions as $action => $description) {
-            $out .= '<a href="' . $this->generateTabUrl('tools', ['tool' => $action]) . '" class="button">' . $description . '</a> ';
+        // Generate rows for each action
+        foreach ($actions as $action) {
+            echo '<tr>';
+            echo '<td>' . esc_html($action['description']) . '</td>';
+            echo '<td>';
+            echo '<a href="' . esc_url($this->generateTabUrl('tools', $action['args'])) . '" class="button">' . esc_html($action['label']) . '</a>';
+            echo '</td>';
+            echo '</tr>';
         }
 
-        $out .= '</div>';
-
-        echo $out;
+        echo '</tbody></table>';
     }
 
     public function adminRunTools()
