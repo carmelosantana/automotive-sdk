@@ -90,7 +90,7 @@ foreach ($vehicle_details as $key => $detail) {
 	$icon = $detail['icon'] ?? '';
 
 	// Check if the attribute exists and is not empty
-	if (isset($vehicle[$attribute]) && !empty($vehicle[$attribute])) {
+	if (isset($vehicle[$attribute]) and !empty($vehicle[$attribute])) {
 		$value = $label . esc_html($vehicle[$attribute]) . $suffix;
 
 		$list_item = '<li><i class="' . esc_attr($icon) . '" aria-hidden="true"></i>' . $value . '</li>';

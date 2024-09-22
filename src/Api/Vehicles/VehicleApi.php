@@ -86,7 +86,7 @@ class VehicleApi
         // Fetch the vehicle post
         $vehicle_post = get_post($vehicle_id);
 
-        if (!$vehicle_post || $vehicle_post->post_type !== 'vehicle') {
+        if (!$vehicle_post or $vehicle_post->post_type !== 'vehicle') {
             return new \WP_REST_Response(['message' => 'Vehicle not found.'], 404);
         }
 

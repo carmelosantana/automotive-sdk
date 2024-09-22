@@ -91,7 +91,7 @@ class Meta
     // Add vehicle meta search to edit.php search
     public function addMetaSearch($query)
     {
-        if (!is_admin() || !$query->is_main_query()) {
+        if (!is_admin() or !$query->is_main_query()) {
             return;
         }
 
@@ -127,7 +127,7 @@ class Meta
     // Sort columns
     public function sortColumns($query)
     {
-        if (!is_admin() || !$query->is_main_query()) {
+        if (!is_admin() or !$query->is_main_query()) {
             return;
         }
 

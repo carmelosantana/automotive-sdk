@@ -91,7 +91,7 @@ class Render
         global $post;
 
         // Proceed only if we're dealing with a 'vehicle' post type
-        if (!isset($post) || $post->post_type !== 'vehicle') {
+        if (!isset($post) or $post->post_type !== 'vehicle') {
             return $content;
         }
 

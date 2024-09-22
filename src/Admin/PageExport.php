@@ -127,7 +127,7 @@ class PageExport extends Page
         $escaped = str_replace('"', '""', $value);
 
         // If the value contains a comma, newline or double quote, enclose it in double quotes
-        if (strpos($escaped, ',') !== false || strpos($escaped, "\n") !== false || strpos($escaped, '"') !== false) {
+        if (strpos($escaped, ',') !== false or strpos($escaped, "\n") !== false or strpos($escaped, '"') !== false) {
             $escaped = '"' . $escaped . '"';
         }
 

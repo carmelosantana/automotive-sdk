@@ -91,13 +91,13 @@ class Files
             }
 
             // Skip rows before the start of the page
-            while ($current_row < $start_row && fgetcsv($file_handle, 0, $delimiter) !== false) {
+            while ($current_row < $start_row and fgetcsv($file_handle, 0, $delimiter) !== false) {
                 $current_row++;
             }
 
             // Read only the rows for the current page
             while (($data = fgetcsv($file_handle, 0, $delimiter)) !== false) {
-                if ($current_row >= $start_row && $current_row < $start_row + $limit) {
+                if ($current_row >= $start_row and $current_row < $start_row + $limit) {
                     $file_data[] = $data;
                 }
                 $current_row++;

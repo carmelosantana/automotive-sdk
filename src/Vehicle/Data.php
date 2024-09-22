@@ -20,7 +20,7 @@ class Data
     {
         $vehicle_post = get_post($id);
 
-        if (!$vehicle_post || $vehicle_post->post_type !== 'vehicle') {
+        if (!$vehicle_post or $vehicle_post->post_type !== 'vehicle') {
             return null;
         }
 
