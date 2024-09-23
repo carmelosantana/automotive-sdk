@@ -150,23 +150,25 @@ class Meta
      */
     public function getFileHeaders(): void
     {
-        if (!isset($_POST['files']) or empty($_POST['files'])) {
+        if (!isset($_POST['files']) || empty($_POST['files'])) {
             wp_send_json_error('No files selected');
             return;
         }
 
-        $files = (array) $_POST['files'];
-        $headers = [];
+        $files = (array) $_POST['files'];  // Get the array of file hashes
+        $headers_by_file = [];
 
         foreach ($files as $file_hash) {
             $file = new \WpAutos\AutomotiveSdk\Admin\File();
-            $file->load($file_hash);
+            $file->load($file_hash);  // Load the file using its hash
 
             if ($file->isLoaded()) {
-                $headers = array_merge($headers, $file->getHeader());
+                // Group headers by file base name
+                $file_name = basename($file->getFilePath());
+                $headers_by_file[$file_name] = $file->getHeader();  // Assume getHeader() returns an array of headers
             }
         }
 
-        wp_send_json_success(['headers' => array_unique($headers)]);
+        wp_send_json_success(['headers_by_file' => $headers_by_file]);  // Return headers grouped by file base name
     }
 }
