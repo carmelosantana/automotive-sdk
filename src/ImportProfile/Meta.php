@@ -48,7 +48,7 @@ class Meta
      */
     public function enqueueScripts(): void
     {
-        wp_enqueue_script('meta-ajax-script', plugins_url('/assets/js/meta-files.js', ASDK__FILE__), ['jquery'], null, true);
+        wp_enqueue_script('meta-ajax-script', plugins_url('/assets/js/meta-import-profile.js', ASDK__FILE__), ['jquery'], null, true);
         wp_localize_script('meta-ajax-script', 'metaAjax', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
         ]);
