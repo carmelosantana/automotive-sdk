@@ -1,7 +1,9 @@
 jQuery(document).ready(function ($) {
     // Function to fetch and populate headers
-    function getFileHeaders() {
-        var selectedFiles = $('#csv_file').val(); // Get the selected file(s)
+    function getFileHeaders(selectedFiles = null) {
+        if (!selectedFiles) {
+            selectedFiles = $('#csv_file').val(); // Get the selected file(s) from the dropdown
+        }
 
         // Make an AJAX request to fetch headers for the selected file(s)
         $.post(metaAjax.ajaxUrl, {
@@ -55,9 +57,23 @@ jQuery(document).ready(function ($) {
         });
     }
 
+    // Check if there is a 'file' parameter in the URL
+    var urlParams = new URLSearchParams(window.location.search);
+    var fileParam = urlParams.get('file');
+
+    // If there is a 'file' parameter, pre-select that file
+    if (fileParam) {
+        $('#csv_file').val([fileParam]);  // Pre-select the file in the dropdown
+        getFileHeaders([fileParam]);  // Fetch and populate headers for the selected file
+    }
+
     // Bind to the change event on the file multi-select box using .on()
-    $('#csv_file').on('change', getFileHeaders);
+    $('#csv_file').on('change', function () {
+        getFileHeaders();
+    });
 
     // On page load, fetch headers for the selected file(s)
-    getFileHeaders();
+    if (!fileParam) {
+        getFileHeaders();  // Only fetch headers if no file param exists (avoiding double-fetch)
+    }
 });
