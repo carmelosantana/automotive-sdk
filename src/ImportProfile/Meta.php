@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WpAutos\AutomotiveSdk\ImportProfile;
 
 use WpAutos\AutomotiveSdk\Admin\Files;
+use WpAutos\AutomotiveSdk\Import\Mapping;
 use WpAutos\AutomotiveSdk\Api\Vehicles\VehicleFields;
 
 class Meta
@@ -13,8 +14,9 @@ class Meta
     {
         add_action('add_meta_boxes', [$this, 'registerMetaBox']);
         add_action('save_post_import-profile', [$this, 'saveMetaBox']);
-        add_action('wp_ajax_get_file_headers', [$this, 'getFileHeaders']); // AJAX handler
-        add_action('admin_enqueue_scripts', [$this, 'enqueueScripts']); // Enqueue JavaScript
+        add_action('wp_ajax_get_file_headers', [$this, 'getFileHeaders']);
+        add_action('wp_ajax_get_universal_mapping', [$this, 'getUniversalMapping']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueScripts']);
     }
 
     /**
@@ -66,6 +68,7 @@ class Meta
         $selected_files = get_post_meta($post->ID, '_csv_file', true) ?: [];
 
 ?>
+        <p><?php _e('Select one or more CSV files for mapping.', 'wp-autos'); ?></p>
         <select name="csv_file[]" id="csv_file" multiple="multiple" style="width: 100%;">
             <option value=""><?php _e('Select files', 'wp-autos'); ?></option>
             <?php foreach ($files as $md5 => $path): ?>
@@ -74,8 +77,8 @@ class Meta
                 </option>
             <?php endforeach; ?>
         </select>
-        <p><?php _e('Select one or more CSV files for mapping.', 'wp-autos'); ?></p>
-    <?php
+        <p><small><?php _e('Changing files will reset selections and load new options.', 'wp-autos'); ?></small></p>
+        <?php
     }
 
     /**
@@ -170,5 +173,14 @@ class Meta
         }
 
         wp_send_json_success(['headers_by_file' => $headers_by_file]);  // Return headers grouped by file base name
+    }
+
+    /**
+     * AJAX handler to return the universal mapping for pre-selecting fields.
+     */
+    public function getUniversalMapping(): void
+    {
+        $Mapping = new Mapping();
+        wp_send_json_success($Mapping::universalMapping());
     }
 }
