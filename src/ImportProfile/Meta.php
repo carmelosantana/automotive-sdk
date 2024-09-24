@@ -120,42 +120,29 @@ class Meta
                             <td>
                                 <select name="csv_meta_mapping[<?php echo esc_attr($meta_key); ?>][csv]" class="widefat meta-dropdown">
                                     <?php
+                                    // Display the saved value if it exists
                                     $selected = $mapping[$meta_key]['csv'] ?? '';
                                     $selected = esc_attr($selected);
 
-                                    // if not empty, add the selected attribute
                                     if (!empty($selected)) {
                                         echo '<option value="' . $selected . '" selected>' . $selected . '</option>';
                                     }
                                     ?>
                                     <option value=""><?php _e('Select a CSV column', 'wp-autos'); ?></option>
-                                    <!-- This will be populated dynamically based on selected file(s) -->
+                                    <!-- Options populated dynamically -->
                                 </select>
                                 <?php
-                                // delimiter
-                                switch ($meta_key) {
-                                    case 'photo_urls':
-                                    case 'options':
-                                        echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][delimiter]" value="' . ($mapping[$meta_key]['delimiter'] ?? '') . '" placeholder="Delimiter" class="small" />';
-                                        break;
-                                        
-                                    case 'options':
-                                        echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][encase]" value="' . ($mapping[$meta_key]['encase'] ?? '') . '" placeholder="Encase Character" class="small" />';
-                                        break;
+                                // Handle extra fields for photo_urls and options
+                                if ($meta_key === 'photo_urls' or $meta_key === 'options') {
+                                    echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][delimiter]" value="' . ($mapping[$meta_key]['delimiter'] ?? '') . '" placeholder="Delimiter" class="small" />';
                                 }
 
-                                // encase character fields
-                                switch ($meta_key) {
-                                    case 'options':
-                                        echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][encase]" value="' . ($mapping[$meta_key]['encase'] ?? '') . '" placeholder="Encase Character" class="small" />';
-                                        break;
+                                if ($meta_key === 'options') {
+                                    echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][encase]" value="' . ($mapping[$meta_key]['encase'] ?? '') . '" placeholder="Encase Character" class="small" />';
                                 }
 
-                                // downloads
-                                switch ($meta_key) {
-                                    case 'photo_urls':
-                                        echo '<label><input type="checkbox" name="csv_meta_mapping[' . $meta_key . '][download]" value="1" ' . checked($mapping[$meta_key]['download'] ?? false, true, false) . ' /> ' . __('Download images', 'wp-autos') . '</label>';
-                                        break;
+                                if ($meta_key === 'photo_urls') {
+                                    echo '<label><input type="checkbox" name="csv_meta_mapping[' . $meta_key . '][download]" value="1" ' . checked($mapping[$meta_key]['download'] ?? false, true, false) . ' /> ' . __('Download images', 'wp-autos') . '</label>';
                                 }
                                 ?>
                             </td>
@@ -185,7 +172,26 @@ class Meta
         // Save CSV to Meta mapping
         if (isset($_POST['csv_meta_mapping']) and is_array($_POST['csv_meta_mapping'])) {
             $csv_meta_mapping = array_map(function ($mapping) {
-                return array_map('sanitize_text_field', $mapping);
+                // Use the existing values and only override with defaults if the value is empty
+                $current_value = $mapping['csv'] ?? '';
+                if (empty($current_value)) {
+                    $mapping['csv'] = sanitize_text_field($mapping['csv']);
+                }
+
+                // Process extra fields like delimiter and encase, if they exist
+                if (isset($mapping['delimiter'])) {
+                    $mapping['delimiter'] = sanitize_text_field($mapping['delimiter']);
+                }
+
+                if (isset($mapping['encase'])) {
+                    $mapping['encase'] = sanitize_text_field($mapping['encase']);
+                }
+
+                if (isset($mapping['download'])) {
+                    $mapping['download'] = sanitize_text_field($mapping['download']);
+                }
+
+                return $mapping;
             }, $_POST['csv_meta_mapping']);
 
             update_post_meta($post_id, '_csv_meta_mapping', $csv_meta_mapping);
