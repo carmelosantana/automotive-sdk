@@ -1,10 +1,10 @@
 .ai/
+.context/
 _builds/
 vendor/
 vendor-wordpress/
 composer.phar
 composer.lock
-.context
 .DS_Store
 # Blocks
 logs
