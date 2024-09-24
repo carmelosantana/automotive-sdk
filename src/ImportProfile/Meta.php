@@ -6,7 +6,7 @@ namespace WpAutos\AutomotiveSdk\ImportProfile;
 
 use WpAutos\AutomotiveSdk\Admin\Files;
 use WpAutos\AutomotiveSdk\Import\Mapping;
-use WpAutos\AutomotiveSdk\Api\Vehicles\VehicleFields;
+use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
 
 class Meta
 {
@@ -78,7 +78,7 @@ class Meta
             <?php endforeach; ?>
         </select>
         <p><small><?php _e('Changing files will reset selections and load new options.', 'wp-autos'); ?></small></p>
-        <?php
+    <?php
     }
 
     /**
@@ -87,36 +87,80 @@ class Meta
     public function renderMetaBox(\WP_Post $post): void
     {
         $mapping = get_post_meta($post->ID, '_csv_meta_mapping', true) ?: [];
-        $vehicleFields = new VehicleFields();
-        $fields = $vehicleFields->getFields();
+        // $vehicleFields = new VehicleFields();
+        // $fields = $vehicleFields->getFields();
+
+        $fields = VehicleFields::get();
+
     ?>
         <table class="form-table">
-            <thead>
+            <!-- <thead>
                 <tr>
-                    <th><?php _e('Meta Field', 'wp-autos'); ?></th>
+                    <th><?php _e('Field', 'wp-autos'); ?></th>
+                    <th><?php _e('Meta', 'wp-autos'); ?></th>
                     <th><?php _e('CSV Column', 'wp-autos'); ?></th>
                 </tr>
-            </thead>
+            </thead> -->
             <tbody id="meta-mapping">
-                <?php foreach ($fields as $meta_key => $meta_info): ?>
+                <?php
+                foreach ($fields as $section):
+                ?>
                     <tr>
-                        <td><?php echo esc_html($meta_key); ?></td>
-                        <td>
-                            <select name="csv_meta_mapping[<?php echo esc_attr($meta_key); ?>][csv]" class="widefat meta-dropdown">
-                                <?php
-                                $selected = $mapping[$meta_key]['csv'] ?? '';
-                                $selected = esc_attr($selected);
-
-                                // if not empty, add the selected attribute
-                                if (!empty($selected)) {
-                                    echo '<option value="' . $selected . '" selected>' . $selected . '</option>';
-                                }
-                                ?>
-                                <option value=""><?php _e('Select a CSV column', 'wp-autos'); ?></option>
-                                <!-- This will be populated dynamically based on selected file(s) -->
-                            </select>
+                        <td colspan="3">
+                            <strong><?php echo esc_html($section['description']); ?></strong>
                         </td>
                     </tr>
+                    <?php
+                    foreach ($section['fields'] as $field):
+                        $meta_key = $field['name'];
+                    ?>
+                        <tr>
+                            <td><?php echo esc_html($field['label']); ?></td>
+                            <td><code><?php echo esc_html($meta_key); ?></code></td>
+                            <td>
+                                <select name="csv_meta_mapping[<?php echo esc_attr($meta_key); ?>][csv]" class="widefat meta-dropdown">
+                                    <?php
+                                    $selected = $mapping[$meta_key]['csv'] ?? '';
+                                    $selected = esc_attr($selected);
+
+                                    // if not empty, add the selected attribute
+                                    if (!empty($selected)) {
+                                        echo '<option value="' . $selected . '" selected>' . $selected . '</option>';
+                                    }
+                                    ?>
+                                    <option value=""><?php _e('Select a CSV column', 'wp-autos'); ?></option>
+                                    <!-- This will be populated dynamically based on selected file(s) -->
+                                </select>
+                                <?php
+                                // delimiter
+                                switch ($meta_key) {
+                                    case 'photo_urls':
+                                    case 'options':
+                                        echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][delimiter]" value="' . ($mapping[$meta_key]['delimiter'] ?? '') . '" placeholder="Delimiter" class="small" />';
+                                        break;
+                                        
+                                    case 'options':
+                                        echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][encase]" value="' . ($mapping[$meta_key]['encase'] ?? '') . '" placeholder="Encase Character" class="small" />';
+                                        break;
+                                }
+
+                                // encase character fields
+                                switch ($meta_key) {
+                                    case 'options':
+                                        echo '<input type="text" name="csv_meta_mapping[' . $meta_key . '][encase]" value="' . ($mapping[$meta_key]['encase'] ?? '') . '" placeholder="Encase Character" class="small" />';
+                                        break;
+                                }
+
+                                // downloads
+                                switch ($meta_key) {
+                                    case 'photo_urls':
+                                        echo '<label><input type="checkbox" name="csv_meta_mapping[' . $meta_key . '][download]" value="1" ' . checked($mapping[$meta_key]['download'] ?? false, true, false) . ' /> ' . __('Download images', 'wp-autos') . '</label>';
+                                        break;
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 <?php endforeach; ?>
             </tbody>
         </table>
