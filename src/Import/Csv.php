@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WpAutos\AutomotiveSdk\Import;
 
 use WpAutos\AutomotiveSdk\Admin\File;
+use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
 
 class Csv
 {
@@ -46,7 +47,11 @@ class Csv
         $vehicles_added = [];
         $vehicles_updated = [];
         foreach ($file_data as $data) {
+            // Map incoming keys to our meta keys
             $vehicle = $this->mapDataToVehicle($data);
+
+            // Parse and filter the incoming data
+            $vehicle = $this->parseData($vehicle);
 
             // Check if the vehicle exists
             $vin_exists = get_posts(['post_type' => 'vehicle', 'meta_key' => 'vin', 'meta_value' => $vehicle['vin']]);
@@ -118,7 +123,11 @@ class Csv
         $vehicles_added = [];
         $vehicles_updated = [];
         foreach ($file_data as $data) {
+            // Map incoming keys to our meta keys
             $vehicle = $this->mapDataToVehicle($data);
+
+            // Parse and filter the incoming data
+            $vehicle = $this->parseData($vehicle);
 
             // Check if the vehicle exists
             $vin_exists = get_posts(['post_type' => 'vehicle', 'meta_key' => 'vin', 'meta_value' => $vehicle['vin']]);
@@ -197,5 +206,59 @@ class Csv
         }
 
         return $vehicle;
+    }
+
+    public function parseData(array $data): array
+    {
+        $parsed_data = [];
+
+        foreach ($data as $key => $value) {
+            $parsed_data[$key] = $this->parseField($key, $value);
+        }
+
+        return $parsed_data;
+    }
+
+    public function parseField(string $key, mixed $value): mixed
+    {
+        $fields = VehicleFields::get();
+
+        // get mapping for this field
+        $mapping = $this->mapping[$key] ?? null;
+
+        // find in the fields array, this is the field we are working with
+        $field = null;
+
+        foreach ($fields as $section) {
+            foreach ($section['fields'] as $f) {
+                if ($f['name'] === $key) {
+                    $field = $f;
+                    break;
+                }
+            }
+        }
+
+        if ($field and $mapping) {
+            // Sanitize the input first
+            $value = sanitize_text_field($value);
+
+            // Modify the value based on the field type
+            switch ($field['type'] ?? '') {
+                case 'number':
+                    // Remove all non-numeric characters
+                    $value = preg_replace('/[^0-9]/', '', $value);
+                    break;
+            }
+
+            // If the field is an array, explode the value
+            switch ($field['data_type'] ?? '') {
+                case 'array':
+                    $delimiter = $mapping['delimiter'] ?? ',';
+                    $value = explode($delimiter, $value);
+                    break;
+            }
+        }
+
+        return $value;
     }
 }
