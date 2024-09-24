@@ -13,10 +13,10 @@ class Meta
     public function __construct()
     {
         add_action('add_meta_boxes', [$this, 'registerMetaBox']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueScripts']);
         add_action('save_post_import-profile', [$this, 'saveMetaBox']);
         add_action('wp_ajax_get_file_headers', [$this, 'getFileHeaders']);
         add_action('wp_ajax_get_universal_mapping', [$this, 'getUniversalMapping']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueueScripts']);
     }
 
     /**
@@ -87,11 +87,7 @@ class Meta
     public function renderMetaBox(\WP_Post $post): void
     {
         $mapping = get_post_meta($post->ID, '_csv_meta_mapping', true) ?: [];
-        // $vehicleFields = new VehicleFields();
-        // $fields = $vehicleFields->getFields();
-
         $fields = VehicleFields::get();
-
     ?>
         <table class="form-table">
             <!-- <thead>

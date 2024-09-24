@@ -9,9 +9,6 @@ class PostType
     public function __construct()
     {
         add_action('init', [$this, 'register']);
-
-        // Register meta box
-        new Meta();
     }
 
     public function register(): void
