@@ -140,7 +140,8 @@ class Fields
                     [
                         'name' => 'photo_urls',
                         'type' => 'textarea',
-                        'label' => 'Photo URLs'
+                        'label' => 'Photo URLs',
+                        'data_type' => 'array'
                     ],
                     [
                         'name' => 'video_url',
@@ -230,7 +231,8 @@ class Fields
                     [
                         'name' => 'options',
                         'type' => 'textarea',
-                        'label' => 'Options'
+                        'label' => 'Options',
+                        'data_type' => 'array'
                     ],
                     [
                         'name' => 'fuel_economy_city',

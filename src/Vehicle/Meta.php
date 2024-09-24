@@ -158,10 +158,19 @@ class Meta
                         $label = $field['label'];
                         $type = $field['type'];
                         $name = $field['name'];
+                        $data_type = $field['data_type'] ?? '';
 
                         // label on the left, input on the right
                         echo '<div style="display: flex; margin-bottom: 1rem;">';
                         echo '<label style="width: 200px;">' . $label . '</label>';
+
+                        // prepare the data type
+                        switch ($data_type) {
+                            case 'array':
+                                $value = maybe_unserialize($value);
+                                $value = implode("\n", $value);
+                                break;
+                        }
 
                         // use switch for different input types
                         switch ($type) {
@@ -196,7 +205,18 @@ class Meta
             foreach ($field['fields'] as $field) {
                 $name = $field['name'];
                 if (isset($_POST[$name])) {
-                    update_post_meta($post_id, $name, sanitize_text_field($_POST[$name]));
+                    switch ($field['data_type'] ?? $field['type']) {
+                        case 'array':
+                            $value = explode("\n", sanitize_textarea_field($_POST[$name]));
+                            $value = array_filter($value);
+                            $value = array_map('trim', $value);
+                            update_post_meta($post_id, $name, $value);
+                            break;
+
+                        default:
+                            update_post_meta($post_id, $name, sanitize_text_field($_POST[$name]));
+                            break;
+                    }
                 }
             }
         }
