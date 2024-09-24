@@ -6,6 +6,18 @@ namespace WpAutos\AutomotiveSdk\Import;
 
 class Mapping
 {
+    /**
+     * Retrieve mapping for the given post ID.
+     *
+     * @param int $post_id The ID of the post (import-profile) to get the mapping.
+     * @return array The mapping stored in post meta.
+     */
+    public function getMapping(int $post_id): array
+    {
+        $meta_mapping = get_post_meta($post_id, '_csv_meta_mapping', true);
+        return is_array($meta_mapping) ? $meta_mapping : [];
+    }
+    
     public static function reverseMapping($original_keys)
     {
         $reverse_mapping = [];

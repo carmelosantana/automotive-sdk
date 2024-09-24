@@ -10,6 +10,7 @@ class Loader
     {
         new Admin();
         new Blocks\Register();
+        new ImportProfile\PostType();
         new Render();
         new Vehicle();
     }

@@ -12,6 +12,18 @@ class Csv
     protected array $file_header = [];
     protected array $template = [];
 
+    private array $mapping = [];
+
+    /**
+     * Set the mapping for the import.
+     *
+     * @param array $mapping The mapping array.
+     */
+    public function setMapping(array $mapping): void
+    {
+        $this->mapping = $mapping;
+    }
+
     /**
      * Imports data from the file.
      *
@@ -167,15 +179,23 @@ class Csv
      */
     private function mapDataToVehicle(array $data): array
     {
+        $data = array_combine($this->file->getHeader(), $data);
+
         $vehicle = [];
-        foreach ($this->file->getTemplate()['template'] as $key => $value) {
+
+        foreach ($this->mapping as $key => $value) {
             if (is_string($value)) {
                 $vehicle[$value] = $data[array_search($key, $this->file->getHeader())];
             } elseif (is_array($value)) {
-                $match = array_intersect($value, $this->file->getHeader());
-                $vehicle[$key] = $data[array_search($match[0], $this->file->getHeader())];
+                if (isset($value['csv'])) {
+                    $vehicle[$key] = $data[$value['csv']];
+                } else {
+                    $match = array_intersect($value, $this->file->getHeader());
+                    $vehicle[$key] = $data[array_shift($match)];
+                }
             }
         }
+
         return $vehicle;
     }
 }

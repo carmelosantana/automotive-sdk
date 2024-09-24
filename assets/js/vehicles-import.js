@@ -7,38 +7,40 @@ jQuery(document).ready(function ($) {
         const importButton = $(this);
         const file = importButton.data('file');
         const nonce = importButton.data('nonce');
+        const profile = $('#import_profile').val(); // Get the selected profile
 
         // Disable the link and show the progress bar
         importButton.addClass('disabled').blur();
         progressWrapper.show();
 
         // Start the import process
-        $.get(vehiclesImport.ajaxUrl, { action: 'start_vehicle_import', file: file, nonce: nonce })
+        $.get(vehiclesImport.ajaxUrl, { action: 'start_vehicle_import', file: file, nonce: nonce, profile: profile })
             .done(function (data) {
                 if (data.success) {
                     const totalRows = data.data.total;
-                    processBatch(file, nonce, totalRows, 0);
+                    processBatch(file, nonce, totalRows, 0, profile); // Pass the profile
                 }
             });
     });
 
-    function processBatch(file, nonce, totalRows, processedRows) {
+    function processBatch(file, nonce, totalRows, processedRows, profile) {
         const batchSize = 10;
         $.post(vehiclesImport.ajaxUrl, {
             action: 'process_vehicle_import_batch',
             file: file,
             offset: processedRows,
             limit: batchSize,
-            nonce: nonce
+            nonce: nonce,
+            profile: profile // Pass the profile
         })
             .done(function (data) {
                 if (data.success) {
                     processedRows += batchSize;
                     updateProgressBar(processedRows, totalRows);
-                    fetchVehicleCount();    // From PageImport.php
+                    fetchVehicleCount();
 
                     if (processedRows < totalRows) {
-                        processBatch(file, nonce, totalRows, processedRows);
+                        processBatch(file, nonce, totalRows, processedRows, profile);
                     } else {
                         updateProgressAndShowAlert();
                     }
