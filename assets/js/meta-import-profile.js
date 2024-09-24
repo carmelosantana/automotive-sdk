@@ -36,14 +36,12 @@ jQuery(document).ready(function ($) {
                     var select = $(this);
                     var metaKey = select.attr('name').replace('csv_meta_mapping[', '').replace('][csv]', '');  // Get the meta key (e.g., 'vin', 'make', etc.)
                     var currentValue = select.val(); // Get the current value of the dropdown
-                    var hasValue = !!currentValue; // Check if the field has a value
 
-                    // Keep the current value in the dropdown
-                    if (hasValue && select.find('option[value="' + currentValue + '"]').length === 0) {
-                        select.append('<option value="' + currentValue + '" disabled="disabled" selected="selected">' + currentValue + ' (Unavailable)</option>');
-                    }
+                    // Preserve the selected value before clearing the options
+                    var hasValue = !!currentValue; // Check if the field has a value (user-selected)
 
-                    select.empty(); // Clear existing options except for the unavailable one
+                    // Clear existing options except for the previously selected value
+                    select.find('option:not([disabled="disabled"])').remove();
                     select.append('<option value="">Select a CSV column</option>'); // Default option
 
                     // Add headers grouped by file base name
@@ -55,8 +53,13 @@ jQuery(document).ready(function ($) {
                                 .attr('value', header)
                                 .text(header);
 
-                            // Preselect if this header matches the universal mapping for this meta key
-                            if (universalMapping[metaKey] && universalMapping[metaKey].includes(header)) {
+                            // Check if the current value matches the header
+                            if (hasValue && currentValue === header) {
+                                option.attr('selected', 'selected');
+                            }
+
+                            // Preselect if the field has no current value AND the header matches the universal mapping
+                            if (!hasValue && universalMapping[metaKey] && universalMapping[metaKey].includes(header)) {
                                 option.attr('selected', 'selected');
                             }
 
