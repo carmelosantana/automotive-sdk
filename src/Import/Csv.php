@@ -26,65 +26,6 @@ class Csv
     }
 
     /**
-     * Imports data from the file.
-     *
-     * @return array Contains the number of vehicles added and updated.
-     */
-    public function fileImport(): array|bool
-    {
-        $file_data = $this->file->getData();
-
-        if (!$file_data) {
-            return false;
-        }
-
-        // disable post meta cache during import
-        wp_suspend_cache_addition(true);
-
-        // Remove the header row
-        unset($file_data[0]);
-
-        $vehicles_added = [];
-        $vehicles_updated = [];
-        foreach ($file_data as $data) {
-            // Map incoming keys to our meta keys
-            $vehicle = $this->mapDataToVehicle($data);
-
-            // Parse and filter the incoming data
-            $vehicle = $this->parseData($vehicle);
-
-            // Check if the vehicle exists
-            $vin_exists = get_posts(['post_type' => 'vehicle', 'meta_key' => 'vin', 'meta_value' => $vehicle['vin']]);
-
-            if (count($vin_exists) > 0) {
-                $vehicle_id = $vin_exists[0]->ID;
-                wp_update_post([
-                    'ID' => $vehicle_id,
-                    'post_title' => $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'],
-                ]);
-                $vehicles_updated[] = $vehicle_id;
-            } else {
-                // Insert new vehicle
-                $vehicle_id = wp_insert_post([
-                    'post_type' => 'vehicle',
-                    'post_title' => $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'],
-                    'post_status' => 'publish',
-                ]);
-                $vehicles_added[] = $vehicle_id;
-            }
-
-            // Add meta and taxonomy
-            $this->addMetaAndTaxonomy($vehicle_id, $vehicle);
-        }
-
-        return [
-            'added' => count($vehicles_added),
-            'updated' => count($vehicles_updated),
-        ];
-    }
-
-
-    /**
      * Set the file for the CSV import.
      *
      * @param string $file
@@ -105,7 +46,7 @@ class Csv
      * @param int $limit The number of rows to process.
      * @return array Contains the number of vehicles added and updated.
      */
-    public function fileImportBatch(int $offset, int $limit): array
+    public function fileImport(int $offset = 0, int $limit = 0): array
     {
         $file_data = $this->file->getData();
 

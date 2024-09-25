@@ -106,7 +106,7 @@ class PageImport extends Page
 
         $import->setMapping($mapping); // Apply the mapping to the import process
 
-        $results = $import->fileImportBatch($offset, $limit);
+        $results = $import->fileImport($offset, $limit);
         wp_send_json_success($results);
     }
 

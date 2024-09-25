@@ -149,7 +149,8 @@ class File
      */
     public function getTotalRows(): ?int
     {
-        return $this->file_data ? count($this->file_data) : null;
+        // Subtract 1 to account for the header row
+        return $this->file_data ? count($this->file_data) - 1 : null;
     }
 
     /**
