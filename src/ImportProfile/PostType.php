@@ -65,9 +65,7 @@ class PostType
             'rewrite' => ['slug' => 'import-profiles'],
             'show_in_rest' => true,
             'supports' => ['title'],
-            // 'menu_icon' => 'dashicons-upload',
             'show_in_menu' => ASDK,
-            // 'menu_position' => 6,
         ];
 
         register_post_type('import-profile', $args);

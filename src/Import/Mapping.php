@@ -103,37 +103,6 @@ class Mapping
                     'description' => 'Universal template',
                     'template' => self::universalMapping()
                 ],
-                'b413a8f1821b995d8b43a959d051f3dc' =>
-                [
-                    'name' => 'VAuto',
-                    'description' => 'VAuto Test',
-                    'template' => [
-                        "address.addr1" => "address_addr1",
-                        "address.city" => "address_city",
-                        "address.region" => "address_region",
-                        "address.country" => "address_country",
-                        "body_style" => "body_style",
-                        "Dealer ID" => "dealer_id",
-                        "Dealer Postal Code" => "dealer_postal_code",
-                        "drivetrain" => "drivetrain",
-                        "exterior_color" => "exterior_color",
-                        "fuel_type" => "fuel_type",
-                        "image[0].url" => "image_0_url",
-                        "image[0].tag[0]" => "image_0_tag_0",
-                        "make" => "make",
-                        "mileage.value" => "mileage_value",
-                        "mileage.unit" => "mileage_unit",
-                        "model" => "model",
-                        "price" => "price",
-                        "sale_price" => "sale_price",
-                        "transmission" => "transmission",
-                        "state_of_vehicle" => "state_of_vehicle",
-                        "trim" => "trim",
-                        "url" => "url",
-                        "vin" => "vin",
-                        "year" => "year"
-                    ]
-                ],
             ];
     }
 
