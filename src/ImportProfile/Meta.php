@@ -34,10 +34,20 @@ class Meta
             'default'
         );
 
+        // Register meta box for CSV to Taxonomy Mapping
+        add_meta_box(
+            'import_profile_taxonomy_mapping',
+            __('Taxonomy Mapping', 'wp-autos'),
+            [$this, 'renderTaxonomyMetaBox'],
+            'import-profile',
+            'normal',
+            'high'
+        );
+
         // Register meta box for CSV to Meta Mapping
         add_meta_box(
             'import_profile_mapping',
-            __('CSV to Meta Mapping', 'wp-autos'),
+            __('Meta Mapping', 'wp-autos'),
             [$this, 'renderMetaBox'],
             'import-profile',
             'normal',
@@ -82,12 +92,52 @@ class Meta
     }
 
     /**
+     * Renders the meta box for CSV to Taxonomy Mapping.
+     */
+    public function renderTaxonomyMetaBox(\WP_Post $post): void
+    {
+        // Retrieve the saved taxonomy mapping
+        $taxonomy_mapping = get_post_meta($post->ID, '_csv_taxonomy_mapping', true) ?: [];
+
+        // Get the taxonomies dynamically from the Fields class
+        $taxonomies = \WpAutos\AutomotiveSdk\Vehicle\Fields::getTaxonomies();
+
+    ?>
+        <table class="form-table">
+            <tbody id="taxonomy-mapping">
+                <?php foreach ($taxonomies as $taxonomy): ?>
+                    <tr>
+                        <td><?php echo esc_html($taxonomy['label']); ?></td>
+                        <td><code><?php echo esc_html($taxonomy['name']); ?></code></td>
+                        <td>
+                            <select name="csv_taxonomy_mapping[<?php echo esc_attr($taxonomy['name']); ?>][csv]" class="widefat taxonomy-dropdown">
+                                <?php
+                                // Display the saved value if it exists
+                                $selected = $taxonomy_mapping[$taxonomy['name']]['csv'] ?? '';
+                                $selected = esc_attr($selected);
+
+                                if (!empty($selected)) {
+                                    echo '<option value="' . $selected . '" selected>' . $selected . '</option>';
+                                }
+                                ?>
+                                <option value=""><?php _e('Select a CSV column', 'wp-autos'); ?></option>
+                                <!-- Options populated dynamically -->
+                            </select>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php
+    }
+
+    /**
      * Renders the meta box for CSV to Meta Mapping.
      */
     public function renderMetaBox(\WP_Post $post): void
     {
         $mapping = get_post_meta($post->ID, '_csv_meta_mapping', true) ?: [];
-        $fields = VehicleFields::get();
+        $fields = VehicleFields::getMetas();
     ?>
         <table class="form-table">
             <!-- <thead>
@@ -166,31 +216,36 @@ class Meta
         }
 
         // Save CSV to Meta mapping
-        if (isset($_POST['csv_meta_mapping']) and is_array($_POST['csv_meta_mapping'])) {
+        if (isset($_POST['csv_meta_mapping']) && is_array($_POST['csv_meta_mapping'])) {
             $csv_meta_mapping = array_map(function ($mapping) {
-                // Use the existing values and only override with defaults if the value is empty
-                $current_value = $mapping['csv'] ?? '';
-                if (empty($current_value)) {
-                    $mapping['csv'] = sanitize_text_field($mapping['csv']);
-                }
-
-                // Process extra fields like delimiter and encase, if they exist
-                if (isset($mapping['delimiter'])) {
-                    $mapping['delimiter'] = sanitize_text_field($mapping['delimiter']);
-                }
-
-                if (isset($mapping['encase'])) {
-                    $mapping['encase'] = sanitize_text_field($mapping['encase']);
-                }
-
-                if (isset($mapping['download'])) {
-                    $mapping['download'] = sanitize_text_field($mapping['download']);
-                }
-
+                // Sanitize and allow empty values
+                $mapping['csv'] = sanitize_text_field($mapping['csv']);
                 return $mapping;
             }, $_POST['csv_meta_mapping']);
 
+            // Process extra fields like delimiter and encase, if they exist
+            $csv_meta = [
+                'delimiter',
+                'encase',
+                'download',
+            ];
+            foreach ($csv_meta as $meta) {
+                if (isset($_POST['csv_meta_mapping'][$meta])) {
+                    $csv_meta_mapping[$meta] = sanitize_text_field($_POST['csv_meta_mapping'][$meta]);
+                }
+            }
+
             update_post_meta($post_id, '_csv_meta_mapping', $csv_meta_mapping);
+        }
+
+        // Save CSV to Taxonomy mapping
+        if (isset($_POST['csv_taxonomy_mapping']) && is_array($_POST['csv_taxonomy_mapping'])) {
+            $csv_taxonomy_mapping = array_map(function ($mapping) {
+                // Sanitize and allow empty values
+                $mapping['csv'] = sanitize_text_field($mapping['csv']);
+                return $mapping;
+            }, $_POST['csv_taxonomy_mapping']);
+            update_post_meta($post_id, '_csv_taxonomy_mapping', $csv_taxonomy_mapping);
         }
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Api\Vehicles;
 
+use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
+
 class VehicleSearch
 {
     /**
@@ -14,6 +16,7 @@ class VehicleSearch
      */
     public function buildQueryArgs(\WP_REST_Request $request): array
     {
+        $meta_search_keys = ['vin', 'options', 'description'];
         $args = [
             'post_type' => 'vehicle',
             'posts_per_page' => -1,
@@ -21,49 +24,28 @@ class VehicleSearch
             'tax_query' => ['relation' => 'AND'],
         ];
 
-        // Add search by VIN (meta query)
-        if ($vin = $request->get_param('vin')) {
-            $args['meta_query'][] = [
-                'key' => 'vin',
-                'value' => $vin,
-                'compare' => 'LIKE',
-            ];
+        // Search by meta fields
+        foreach ($meta_search_keys as $key) {
+            if ($value = $request->get_param($key)) {
+                $args['meta_query'][] = [
+                    'key' => $key,
+                    'value' => $value,
+                    'compare' => 'LIKE',
+                ];
+            }
         }
 
-        // Add search by make, model, and year (taxonomies)
-        if ($make = $request->get_param('make')) {
-            $args['tax_query'][] = [
-                'taxonomy' => 'make',
-                'field' => 'name',
-                'terms' => $make,
-                'operator' => 'LIKE',
-            ];
-        }
+        // Search taxonomy terms
+        $taxonomy = VehicleFields::getTaxonomies();
 
-        if ($model = $request->get_param('model')) {
-            $args['tax_query'][] = [
-                'taxonomy' => 'model',
-                'field' => 'name',
-                'terms' => $model,
-                'operator' => 'LIKE',
-            ];
-        }
-
-        if ($year = $request->get_param('year')) {
-            $args['tax_query'][] = [
-                'taxonomy' => 'year',
-                'field' => 'name',
-                'terms' => $year,
-                'operator' => 'LIKE',
-            ];
-        }
-
-        if ($options = $request->get_param('options')) {
-            $args['meta_query'][] = [
-                'key' => 'options',
-                'value' => $options,
-                'compare' => 'LIKE',
-            ];
+        foreach ($taxonomy as $tax) {
+            if ($value = $request->get_param($tax['name'])) {
+                $args['tax_query'][] = [
+                    'taxonomy' => $tax['name'],
+                    'field' => 'slug',
+                    'terms' => $value,
+                ];
+            }
         }
 
         return $args;

@@ -95,7 +95,7 @@ class Render
             return $content;
         }
 
-        $fields = Fields::get();
+        $fields = Fields::getMetas();
         $meta = get_post_meta($post->ID);
 
         $data = [];
@@ -108,9 +108,15 @@ class Render
         }
 
         // Collect taxonomy terms
-        $data['make']  = strip_tags(get_the_term_list($post->ID, 'make', '', ', ', ''));
-        $data['model'] = strip_tags(get_the_term_list($post->ID, 'model', '', ', ', ''));
-        $data['year']  = strip_tags(get_the_term_list($post->ID, 'year', '', ', ', ''));
+        $taxonomies = Fields::getTaxonomies();
+
+        foreach ($taxonomies as $taxonomy) {
+            $terms = get_the_term_list($post->ID, $taxonomy['name'], '', ', ', '');
+
+            if (is_string($terms)) {
+                $data[$taxonomy['name']] = strip_tags($terms);
+            }
+        }
 
         // Initialize Mustache Engine
         $m = new Mustache_Engine(['entity_flags' => ENT_QUOTES]);

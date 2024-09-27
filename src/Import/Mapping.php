@@ -15,9 +15,11 @@ class Mapping
     public function getMapping(int $post_id): array
     {
         $meta_mapping = get_post_meta($post_id, '_csv_meta_mapping', true);
-        return is_array($meta_mapping) ? $meta_mapping : [];
+        $tax_mapping = get_post_meta($post_id, '_csv_taxonomy_mapping', true);
+
+        return array_merge($meta_mapping, $tax_mapping);
     }
-    
+
     public static function reverseMapping($original_keys)
     {
         $reverse_mapping = [];

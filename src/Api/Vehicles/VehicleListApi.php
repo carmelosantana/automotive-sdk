@@ -55,10 +55,9 @@ class VehicleListApi
                 $make = wp_get_post_terms(get_the_ID(), 'make', ['fields' => 'names'])[0] ?? '';
                 $model = wp_get_post_terms(get_the_ID(), 'model', ['fields' => 'names'])[0] ?? '';
                 $trim = wp_get_post_terms(get_the_ID(), 'trim', ['fields' => 'names'])[0] ?? '';
-                $body = get_post_meta(get_the_ID(), 'body', true);  // Body is meta data
 
-                // Create the vehicle key as "Year Make Model Trim Body"
-                $vehicle_key = trim("{$year} {$make} {$model} {$trim} {$body}");
+                // Compile the vehicle key
+                $vehicle_key = trim("$year $make $model $trim");
 
                 // Remove extra whitespace
                 $vehicle_key = preg_replace('/\s+/', ' ', $vehicle_key);

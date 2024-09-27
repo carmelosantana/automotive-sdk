@@ -47,7 +47,7 @@ class VehicleFields
         $fields = [];
 
         // Fetch all fields from Vehicle/Meta
-        $meta_definitions = VehicleMetaFields::get();
+        $meta_definitions = VehicleMetaFields::getMetas();
         $meta_keys = [];
 
         // Collect meta keys from Vehicle Meta definitions
@@ -88,16 +88,16 @@ class VehicleFields
      */
     private function getTaxonomyValues(): array
     {
-        $taxonomies = ['make', 'model', 'trim', 'year'];
+        $taxonomies = VehicleMetaFields::getTaxonomies();
         $fields = [];
 
         foreach ($taxonomies as $taxonomy) {
             $terms = get_terms([
-                'taxonomy' => $taxonomy,
+                'taxonomy' => $taxonomy['name'],
                 'hide_empty' => false,
             ]);
 
-            $fields[$taxonomy] = [
+            $fields[$taxonomy['name']] = [
                 'type' => 'string',
                 'values' => !is_wp_error($terms) ? wp_list_pluck($terms, 'name') : [],
             ];

@@ -6,7 +6,13 @@ namespace WpAutos\AutomotiveSdk\Vehicle;
 
 class Fields
 {
-    public static function get()
+    /**
+     * Get a structured array of meta fields in sections.
+     * Used for registering and referencing meta fields for the vehicle post type.
+     *
+     * @return array
+     */
+    public static function getMetas()
     {
         return [
             'specifications' => [
@@ -21,31 +27,6 @@ class Fields
                         'name' => 'stock_number',
                         'type' => 'text',
                         'label' => 'Stock Number'
-                    ],
-                    [
-                        'name' => 'year',
-                        'type' => 'text',
-                        'label' => 'Year'
-                    ],
-                    [
-                        'name' => 'make',
-                        'type' => 'text',
-                        'label' => 'Make'
-                    ],
-                    [
-                        'name' => 'model',
-                        'type' => 'text',
-                        'label' => 'Model'
-                    ],
-                    [
-                        'name' => 'trim',
-                        'type' => 'text',
-                        'label' => 'Trim'
-                    ],
-                    [
-                        'name' => 'body',
-                        'type' => 'text',
-                        'label' => 'Body'
                     ],
                     [
                         'name' => 'mileage',
@@ -270,6 +251,48 @@ class Fields
                         'label' => 'Carfax Available'
                     ],
                 ],
+            ],
+        ];
+    }
+
+    /**
+     * Get a structured array of taxonomies.
+     * Used for registering and referencing taxonomies for the vehicle post type.
+     *
+     * @return array
+     */
+    public static function getTaxonomies(): array
+    {
+        return [
+            [
+                'name' => 'year',
+                'slug' => 'years',
+                'label' => 'Year',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'make',
+                'slug' => 'makes',
+                'label' => 'Make',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'model',
+                'slug' => 'models',
+                'label' => 'Model',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'trim',
+                'slug' => 'trims',
+                'label' => 'Trim',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'body',
+                'slug' => 'bodies',
+                'label' => 'Body',
+                'hierarchical' => false,
             ],
         ];
     }

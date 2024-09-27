@@ -40,23 +40,16 @@ class Meta
         switch ($column) {
                 // tax
             case 'make':
-                echo get_the_term_list($post_id, 'make', '', ', ', '');
-                break;
             case 'model':
-                echo get_the_term_list($post_id, 'model', '', ', ', '');
-                break;
             case 'year':
-                echo get_the_term_list($post_id, 'year', '', ', ', '');
+                echo get_the_term_list($post_id, $column, '', ', ', '');
                 break;
+
                 // meta
             case 'price':
-                echo get_post_meta($post_id, 'price', true);
-                break;
             case 'sale_price':
-                echo get_post_meta($post_id, 'sale_price', true);
-                break;
             case 'vin':
-                echo get_post_meta($post_id, 'vin', true);
+                echo get_post_meta($post_id, $column, true);
                 break;
         }
     }
@@ -143,14 +136,14 @@ class Meta
     public function metaboxRegister()
     {
         // add meta box per section
-        $fields = Fields::get();
+        $fields = Fields::getMetas();
         foreach ($fields as $section => $field) {
             add_meta_box(
                 'vehicle_meta_box_' . $section,
                 $field['description'],
                 // use a display function that takes the section as an argument
                 function ($post) use ($section) {
-                    $fields = Fields::get()[$section]['fields'];
+                    $fields = Fields::getMetas()[$section]['fields'];
                     $meta = get_post_meta($post->ID);
 
                     foreach ($fields as $field) {
@@ -199,7 +192,7 @@ class Meta
     // save custom meta box
     public function metaboxSave($post_id)
     {
-        $fields = Fields::get();
+        $fields = Fields::getMetas();
 
         foreach ($fields as $section => $field) {
             foreach ($field['fields'] as $field) {

@@ -1,7 +1,8 @@
 jQuery(document).ready(function ($) {
     var universalMapping = {};
+    var headersByFile = {};
 
-    // Fetch the universal mapping via AJAX
+    // Function to fetch universal mapping via AJAX
     function getUniversalMapping(callback) {
         $.post(metaAjax.ajaxUrl, {
             action: 'get_universal_mapping'
@@ -29,53 +30,59 @@ jQuery(document).ready(function ($) {
             files: selectedFiles,  // Send the selected file keys
         }, function (response) {
             if (response.success) {
-                var headersByFile = response.data.headers_by_file;  // Fetched headers grouped by file base name
+                headersByFile = response.data.headers_by_file;  // Fetched headers grouped by file base name
 
-                // Populate each meta dropdown with the CSV headers grouped by file
-                $('.meta-dropdown').each(function () {
-                    var select = $(this);
-                    var metaKey = select.attr('name').replace('csv_meta_mapping[', '').replace('][csv]', '');  // Get the meta key (e.g., 'vin', 'make', etc.)
-                    var currentValue = select.val(); // Get the current value of the dropdown
-
-                    // Preserve the selected value before clearing the options
-                    var hasValue = !!currentValue; // Check if the field has a value (user-selected)
-
-                    // Clear existing options except for the previously selected value
-                    select.find('option:not([disabled="disabled"])').remove();
-                    select.append('<option value="">Select a CSV column</option>'); // Default option
-
-                    // Add headers grouped by file base name
-                    $.each(headersByFile, function (fileName, headers) {
-                        var optgroup = $('<optgroup></optgroup>').attr('label', fileName);
-
-                        $.each(headers, function (index, header) {
-                            var option = $('<option></option>')
-                                .attr('value', header)
-                                .text(header);
-
-                            // Check if the current value matches the header
-                            if (hasValue && currentValue === header) {
-                                option.attr('selected', 'selected');
-                            }
-
-                            // Preselect if the field has no current value AND the header matches the universal mapping
-                            if (!hasValue && universalMapping[metaKey] && universalMapping[metaKey].includes(header)) {
-                                option.attr('selected', 'selected');
-                            }
-
-                            optgroup.append(option);
-                        });
-
-                        select.append(optgroup); // Add the group to the dropdown
-                    });
-
-                    // Re-enable previously unavailable values if they are now available
-                    if (hasValue && select.find('option[value="' + currentValue + '"]').length === 0) {
-                        select.append('<option value="' + currentValue + '" disabled="disabled" selected="selected">' + currentValue + ' (Unavailable)</option>');
-                    }
-                });
+                // Populate dropdowns for meta and taxonomy fields
+                populateDropdowns('.meta-dropdown');
+                populateDropdowns('.taxonomy-dropdown');
             } else {
                 console.log('Error loading file headers');
+            }
+        });
+    }
+
+    // Function to populate dropdowns with headers
+    function populateDropdowns(selector) {
+        $(selector).each(function () {
+            var select = $(this);
+            var mappingKey = select.attr('name').replace(/csv_(meta|taxonomy)_mapping\[/, '').replace(/\]\[csv\]/, '');  // Get the mapping key
+            var currentValue = select.val(); // Get the current value of the dropdown
+
+            // Preserve the selected value before clearing the options
+            var hasValue = !!currentValue; // Check if the field has a value (user-selected)
+
+            // Clear existing options except for the previously selected value
+            select.find('option:not([disabled="disabled"])').remove();
+            select.append('<option value="">Select a CSV column</option>'); // Default option
+
+            // Add headers grouped by file base name
+            $.each(headersByFile, function (fileName, headers) {
+                var optgroup = $('<optgroup></optgroup>').attr('label', fileName);
+
+                $.each(headers, function (index, header) {
+                    var option = $('<option></option>')
+                        .attr('value', header)
+                        .text(header);
+
+                    // Check if the current value matches the header
+                    if (hasValue && currentValue === header) {
+                        option.attr('selected', 'selected');
+                    }
+
+                    // Preselect if the field has no current value AND the header matches the universal mapping
+                    if (!hasValue && universalMapping[mappingKey] && universalMapping[mappingKey].includes(header)) {
+                        option.attr('selected', 'selected');
+                    }
+
+                    optgroup.append(option);
+                });
+
+                select.append(optgroup); // Add the group to the dropdown
+            });
+
+            // Re-enable previously unavailable values if they are now available
+            if (hasValue && select.find('option[value="' + currentValue + '"]').length === 0) {
+                select.append('<option value="' + currentValue + '" disabled="disabled" selected="selected">' + currentValue + ' (Unavailable)</option>');
             }
         });
     }
@@ -84,7 +91,7 @@ jQuery(document).ready(function ($) {
     var urlParams = new URLSearchParams(window.location.search);
     var fileParam = urlParams.get('file');
 
-    // If there is a 'file' parameter, pre-select that file
+    // If there is a 'file' parameter, pre-select that file and populate fields
     if (fileParam) {
         $('#csv_file').val([fileParam]);  // Pre-select the file in the dropdown
         getUniversalMapping(function () {
@@ -92,13 +99,8 @@ jQuery(document).ready(function ($) {
         });
     }
 
-    // Bind to the change event on the file multi-select box using .on()
+    // Bind to the change event on the file multi-select box
     $('#csv_file').on('change', function () {
-        getUniversalMapping(getFileHeaders);  // Fetch mapping first, then file headers
+        getUniversalMapping(getFileHeaders);  // Fetch mapping first, then file headers when a new file is selected
     });
-
-    // On page load, fetch headers for the selected file(s)
-    if (!fileParam) {
-        getUniversalMapping(getFileHeaders);  // Only fetch headers if no file param exists
-    }
 });
