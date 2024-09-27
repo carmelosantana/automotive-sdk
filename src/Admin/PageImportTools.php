@@ -17,18 +17,30 @@ class PageImportTools extends PageImport
     {
         $actions = [
             [
-                'description' => 'Deletes all vehicles, retains images.',
+                'description' => 'Deletes all vehicles.',
                 'label' => 'Delete All Vehicles',
-                'args' => [
-                    'tool' => 'delete_all_vehicles'
+                'buttons' => [
+                    [
+                        'label' => 'Delete All Vehicles',
+                        'tab' => 'import',
+                        'args' => [
+                            'tool' => 'delete_all_vehicles',
+                        ],
+                        'confirm' => 'Are you sure you want to delete all vehicles?'
+                    ]
                 ]
             ],
             [
                 'description' => 'Refreshes the file library.',
                 'label' => 'Refresh Files',
-                'args' => [
-                    'tab' => 'import',
-                    'tool' => 'refresh_files',
+                'buttons' => [
+                    [
+                        'label' => 'Refresh Files',
+                        'tab' => 'import',
+                        'args' => [
+                            'tool' => 'refresh_files',
+                        ]
+                    ]
                 ]
             ],
         ];
@@ -47,7 +59,14 @@ class PageImportTools extends PageImport
             echo '<tr>';
             echo '<td>' . esc_html($action['description']) . '</td>';
             echo '<td>';
-            echo '<a href="' . esc_url($this->generateTabUrl('tools', $action['args'])) . '" class="button">' . esc_html($action['label']) . '</a>';
+            foreach ($action['buttons'] as $button) {
+                // echo ' <a href="' . esc_url($this->generateTabUrl('tools', $button['args'])) . '" class="button">' . esc_html($button['label'] ?? 'Run') . '</a>';
+                if (isset($button['confirm'])) {
+                    echo ' <a href="' . esc_url($this->generateTabUrl('tools', $button['args'])) . '" class="button" onclick="return confirm(\'' . esc_js($button['confirm']) . '\');">' . esc_html($button['label'] ?? 'Run') . '</a>';
+                } else {
+                    echo ' <a href="' . esc_url($this->generateTabUrl('tools', $button['args'])) . '" class="button">' . esc_html($button['label'] ?? 'Run') . '</a>';
+                }
+            }
             echo '</td>';
             echo '</tr>';
         }
