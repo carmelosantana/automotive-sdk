@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle;
 
-use WpAutos\AutomotiveSdk\Api\Vehicles\VehicleFields;
+use WpAutos\AutomotiveSdk\Api\Vehicles\VehicleGetFields;
 
 class Data
 {
@@ -106,7 +106,7 @@ class Data
         ];
 
         // Get all meta values
-        $fields = (new VehicleFields())->getFields();
+        $fields = (new VehicleGetFields())->getFields();
         foreach ($fields as $key => $details) {
             $vehicle_data[$key] = get_post_meta($vehicle_post->ID, $key, true);
         }

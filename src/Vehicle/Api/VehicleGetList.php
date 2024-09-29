@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Api\Vehicles;
+namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
-class VehicleListApi
+class VehicleGetList
 {
     protected VehicleSearch $vehicleSearch;
 

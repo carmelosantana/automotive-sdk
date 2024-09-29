@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Api\Vehicles;
+namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
 use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleMetaFields;
 
-class VehicleFields
+class VehicleGetFields
 {
     /**
      * Get all field keys and their unique values.
