@@ -24,24 +24,40 @@ class MetaFields
     {
         if (!empty($this->post_meta_fields)) {
             add_action('add_meta_boxes', [$this, 'registerMetaBoxes']);
-            add_action('save_post', [$this, 'saveMetaBoxes']);
+            add_action('save_post_' . $this->post_type, [$this, 'saveMetaBoxes']);
         }
     }
 
     /**
-     * Register meta boxes dynamically based on $post_meta_fields
+     * Register meta boxes dynamically based on $post_meta_fields with sections.
      */
     public function registerMetaBoxes(): void
     {
-        foreach ($this->post_meta_fields as $field) {
+        foreach ($this->post_meta_fields as $section_key => $section) {
+            // Register a meta box for each section
             add_meta_box(
-                $field['id'],
-                $field['label'],
-                function () use ($field) {
-                    $this->renderMetaField($field);
+                $section_key,  // Section key as ID
+                $section['label'],  // Label for the meta box
+                function () use ($section) {
+                    $this->renderMetaSection($section);
                 },
                 $this->post_type
             );
+        }
+    }
+
+    /**
+     * Render all fields within a section.
+     */
+    protected function renderMetaSection(array $section): void
+    {
+        if (isset($section['description'])) {
+            echo '<p class="description">' . esc_html($section['description']) . '</p>';
+        }
+
+        // Loop through all fields in the section and render them
+        foreach ($section['fields'] as $field) {
+            $this->renderMetaField($field);  // Reuse the existing field rendering logic
         }
     }
 
@@ -53,25 +69,18 @@ class MetaFields
         global $post;
         $value = get_post_meta($post->ID, $field['id'], true);
 
-        echo '<label>' . esc_html($field['label']) . '</label><br>';
-
-        // If a description is present, display it
-        if (isset($field['description'])) {
-            echo '<p class="description">' . esc_html($field['description']) . '</p>';
-        }
-
         switch ($field['type']) {
             case 'group':
-                echo '<div><h4>' . esc_html($field['label']) . '</h4>';
+                echo '<div><h3>' . esc_html($field['label']) . '</h3>';
                 foreach ($field['fields'] as $sub_field_key => $sub_field_group) {
+                    echo '<div style="background-color: #f1f1f1; border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin: 10px 0;">';
                     $field_value = get_post_meta($post->ID, $field['id'], true);
+                    echo '<h4>' . esc_html($sub_field_group['label'] ?? ucwords($sub_field_key)) . '</h4>';
                     foreach ($sub_field_group['fields'] as $sub_field) {
-                        echo '<label>' . esc_html($sub_field['label']) . '</label>';
                         $sub_value = $field_value[$sub_field['id']] ?? '';
                         $this->renderFieldType($sub_field, $sub_value);
                     }
-                    echo '<div style="border-bottom: 1px solid #ccc; margin: 10px 0;"></div>';
-
+                    echo '</div>';
                 }
                 echo '</div>';
                 break;
@@ -93,19 +102,54 @@ class MetaFields
         }
     }
 
+    // Render different field types
+    protected function renderFieldType(array $field, string $value): void
+    {
+        $slug = $field['id'];
+        echo '<div style="background-color: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin: 10px 0;">';
+
+        switch ($field['type']) {
+            case 'checkbox':
+                $this->renderFieldInput($field, $value);
+                $this->renderFieldLabel($field);
+                break;
+
+            default:
+                $this->renderFieldLabel($field);
+                $this->renderFieldInput($field, $value);
+                break;
+        }
+
+        // If a description is present, display it
+        if (isset($field['description'])) {
+            echo '<p class="description">' . esc_html($field['description']) . '</p>';
+        }
+
+        echo '</div>';
+    }
+
+    protected function renderFieldLabel(array $field): void
+    {
+        $label = $field['label'] ?? ucwords($field['id']);
+        echo ' <label for="' . esc_attr($field['id']) . '">' . esc_html($label) . '</label>';
+        echo ' <small style="font-family: monospace; background-color: #ddd; padding: 2px 5px; border-radius: 3px;">' . esc_html($field['id']) . '</small>';
+    }
+
     /**
      * Render different field types
      */
-    protected function renderFieldType(array $field, string $value): void
+    protected function renderFieldInput(array $field, string $value): void
     {
-        switch ($field['type']) {
-            case 'textarea':
-                echo '<textarea name="' . esc_attr($field['id']) . '">' . esc_textarea($value) . '</textarea>';
-                break;
+        echo ' ';
 
+        switch ($field['type']) {
             case 'checkbox':
                 $checked = $value ? 'checked' : '';
                 echo '<input type="checkbox" name="' . esc_attr($field['id']) . '" value="1" ' . $checked . ' />';
+                break;
+
+            case 'textarea':
+                echo '<textarea name="' . esc_attr($field['id']) . '">' . esc_textarea($value) . '</textarea>';
                 break;
 
             case 'select':
@@ -137,7 +181,7 @@ class MetaFields
                 }
                 break;
 
-            default:
+            case 'text':
                 echo '<input type="text" name="' . esc_attr($field['id']) . '" value="' . esc_attr($value) . '" />';
                 break;
         }
@@ -156,25 +200,27 @@ class MetaFields
             return;
         }
 
-        foreach ($this->post_meta_fields as $field) {
-            if ($field['type'] === 'group') {
-                $group_data = [];
-                foreach ($field['fields'] as $sub_field_group) {
-                    foreach ($sub_field_group['fields'] as $sub_field) {
-                        if (isset($_POST[$sub_field['id']])) {
-                            $group_data[$sub_field['id']] = sanitize_text_field($_POST[$sub_field['id']]);
+        foreach ($this->post_meta_fields as $section_key => $section) {
+            foreach ($section['fields'] as $field) {
+                if ($field['type'] === 'group') {
+                    $group_data = [];
+                    foreach ($field['fields'] as $sub_field_group) {
+                        foreach ($sub_field_group['fields'] as $sub_field) {
+                            if (isset($_POST[$sub_field['id']])) {
+                                $group_data[$sub_field['id']] = sanitize_text_field($_POST[$sub_field['id']]);
+                            }
                         }
                     }
-                }
-                update_post_meta($post_id, $field['id'], $group_data);
-            } elseif ($field['type'] === 'multi-select') {
-                $selected_values = isset($_POST[$field['id']]) ? array_map('sanitize_text_field', $_POST[$field['id']]) : [];
-                update_post_meta($post_id, $field['id'], $selected_values);
-            } else {
-                if (isset($_POST[$field['id']])) {
-                    update_post_meta($post_id, $field['id'], sanitize_text_field($_POST[$field['id']]));
-                } elseif ($field['type'] === 'checkbox') {
-                    update_post_meta($post_id, $field['id'], '0'); // Handle unchecked checkboxes
+                    update_post_meta($post_id, $field['id'], $group_data);
+                } elseif ($field['type'] === 'multi-select') {
+                    $selected_values = isset($_POST[$field['id']]) ? array_map('sanitize_text_field', $_POST[$field['id']]) : [];
+                    update_post_meta($post_id, $field['id'], $selected_values);
+                } else {
+                    if (isset($_POST[$field['id']])) {
+                        update_post_meta($post_id, $field['id'], sanitize_text_field($_POST[$field['id']]));
+                    } elseif ($field['type'] === 'checkbox') {
+                        update_post_meta($post_id, $field['id'], '0'); // Handle unchecked checkboxes
+                    }
                 }
             }
         }
