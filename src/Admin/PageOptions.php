@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Admin;
 
+use WpAutos\AutomotiveSdk\Options;
+
 class PageOptions extends Page
 {
     protected $page_slug = 'options';
@@ -13,6 +15,7 @@ class PageOptions extends Page
 
     protected $tab_actions = [
         'dealer' => 'Dealer',
+        'legal' => 'Legal',
         'license' => 'License',
     ];
 
@@ -73,38 +76,7 @@ class PageOptions extends Page
      */
     protected function defineFields(): array
     {
-        return [
-            'dealer' => [
-                'section_title' => __('Dealer Settings', 'automotive-sdk'),
-                'fields' => [
-                    [
-                        'name' => 'dealer_name',
-                        'type' => 'text',
-                        'label' => __('Dealer Name', 'automotive-sdk'),
-                    ],
-                    [
-                        'name' => 'dealer_address',
-                        'type' => 'text',
-                        'label' => __('Dealer Address', 'automotive-sdk'),
-                    ],
-                    [
-                        'name' => 'dealer_description',
-                        'type' => 'textarea',
-                        'label' => __('Dealer Description', 'automotive-sdk'),
-                    ],
-                ],
-            ],
-            'license' => [
-                'section_title' => __('License Settings', 'automotive-sdk'),
-                'fields' => [
-                    [
-                        'name' => 'license_key',
-                        'type' => 'text',
-                        'label' => __('License Key', 'automotive-sdk'),
-                    ],
-                ],
-            ],
-        ];
+        return Options::get();
     }
 
     /**
