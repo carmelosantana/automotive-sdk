@@ -20,6 +20,7 @@ define('ASDK_DIR_URL', plugin_dir_url(__FILE__));
 define('ASDK_DIR_PATH', plugin_dir_path(__FILE__));
 define('ASDK_ASSETS_URL', ASDK_DIR_URL . 'assets/');
 define('ASDK_ASSETS_PATH', ASDK_DIR_PATH . 'assets/');
+define('ASDK_SRC', ASDK_DIR_PATH . 'src/');
 define('ASDK_VERSION', '0.1.5');
 
 // Composer
