@@ -8,37 +8,26 @@ class Loader
 {
     public function __construct()
     {
-        $this->addFilters();
         $this->setupAdmin();
         $this->setupBlocks();
         $this->setupImportProfile();
         $this->setupRender();
         $this->setupVehicle();
-        $this->setupApi();
-    }
-
-    public function addFilters()
-    {
-        add_filter('upload_mimes', [$this, 'allowUploadMimes']);
-    }
-
-    public function allowUploadMimes($mimes)
-    {
-        $mimes['csv'] = 'text/csv';
-        return $mimes;
+        $this->setupVehicleApi();
     }
 
     public function setupAdmin()
     {
-        new Admin\PageDashboard();
-        new Admin\PageImport();
-        new Admin\PageExport();
-        new Admin\PageOptions();
+        new Admin();
     }
 
-    public function setupApi()
+    public function setupVehicleApi()
     {
-        new Api\Vehicles\VehicleApi();
+        new Vehicle\Api\VehicleGet();
+        new Vehicle\Api\VehicleGetFields();
+        new Vehicle\Api\VehiclePost();
+        new Vehicle\Api\VehiclePut();
+        new Vehicle\Api\VehicleDelete();
     }
 
     public function setupBlocks()
