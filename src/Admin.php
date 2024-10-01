@@ -14,16 +14,13 @@ class Admin
         new Admin\PageExport();
         new Admin\PageOptions();
 
+        // Filters
         add_filter('upload_mimes', [$this, 'allowUploadMimes']);
     }
 
     public function allowUploadMimes($mimes)
     {
         $mimes['csv'] = 'text/csv';
-        $mimes['tsv'] = 'text/tab-separated-values';
-        $mimes['json'] = 'application/json';
-        $mimes['xml'] = 'application/xml';
-
         return $mimes;
     }
 }
