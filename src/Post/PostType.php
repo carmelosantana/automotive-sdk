@@ -19,15 +19,29 @@ class PostType
     protected array $post_meta_fields = [];
     protected array $post_taxonomies = [];
 
-    public function __construct(string $post_type, array $post_meta_fields = [], array $post_taxonomies = [])
+    public function __construct(string $post_type = '', array $post_meta_fields = [], array $post_taxonomies = [])
     {
-        $this->post_type = $post_type;
-        $this->post_meta_fields = $post_meta_fields;
-        $this->post_taxonomies = $post_taxonomies;
+        if (!empty($post_type)) {
+            $this->post_type = $post_type;
+        }
 
-        // Initialize MetaFields for meta handling
-        $metaFields = new MetaFields($this->post_type, $this->post_meta_fields);
+        if (empty($this->post_type)) {
+            throw new \Exception('Post type is required.');
+        }
 
+        if (!empty($post_meta_fields)) {
+            $this->post_meta_fields = $post_meta_fields;
+        } elseif (method_exists($this, 'buildMetas')) {
+            $this->post_meta_fields = $this->buildMetas();
+        }
+
+        if (!empty($post_taxonomies)) {
+            $this->post_taxonomies = $post_taxonomies;
+        }
+    }
+
+    public function register(): void
+    {
         $this->registerHooks();
     }
 
@@ -37,7 +51,15 @@ class PostType
     public function registerHooks(): void
     {
         add_action('init', [$this, 'registerPostType']);
-        add_action('init', [$this, 'registerTaxonomies']);
+
+        // Initialize MetaFields for meta handling
+        if (!empty($this->post_meta_fields)) {
+            $metaFields = new MetaFields($this->post_type, $this->post_meta_fields);
+        }
+
+        if (!empty($this->post_taxonomies)) {
+            add_action('init', [$this, 'registerTaxonomies']);
+        }
 
         add_filter('manage_' . $this->post_type . '_posts_columns', [$this, 'addCustomColumns']);
         add_action('manage_' . $this->post_type . '_posts_custom_column', [$this, 'renderCustomColumns'], 10, 2);
@@ -167,5 +189,26 @@ class PostType
         }
 
         return $options;
+    }
+
+    public function setMetaFields(array $post_meta_fields): self
+    {
+        $this->post_meta_fields = $post_meta_fields;
+
+        return $this;
+    }
+
+    public function setTaxonomies(array $post_taxonomies): self
+    {
+        $this->post_taxonomies = $post_taxonomies;
+
+        return $this;
+    }
+
+    public function setPostType(string $post_type): self
+    {
+        $this->post_type = $post_type;
+
+        return $this;
     }
 }
