@@ -4,21 +4,32 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
+use WpAutos\AutomotiveSdk\Api\RestApiBase;
 use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleMetaFields;
 
-class VehicleGetFields
+class VehicleGetFields extends VehicleRestBase
 {
+    public function registerRoutes(): void
+    {
+        register_rest_route($this->api_namespace . '/' . $this->api_version, '/' . $this->api_post_type . '/fields', [
+            'methods' => \WP_REST_Server::READABLE,
+            'callback' => [$this, 'getFields'],
+            'permission_callback' => '__return_true', // Allow public access
+        ]);
+    }
+
     /**
-     * Get all field keys and their unique values.
+     * Get all field keys and their unique values (meta and taxonomies).
      *
-     * @return array
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
      */
-    public function getFields(): array
+    public function getFields(\WP_REST_Request $request): \WP_REST_Response
     {
         // Try to get the cached result first
         $fields = get_transient('vehicle_fields_data');
         if ($fields !== false) {
-            return $fields;
+            return new \WP_REST_Response($fields, 200);
         }
 
         // Retrieve meta fields from Vehicle Meta and their unique values
@@ -31,13 +42,13 @@ class VehicleGetFields
         $fields = array_merge($meta_fields, $taxonomy_values);
 
         // Cache the result for 5 minutes
-        set_transient('vehicle_fields_data', $fields, 5 * MINUTE_IN_SECONDS);
+        set_transient('vehicle_fields_data', $fields, 60 * MINUTE_IN_SECONDS);
 
-        return $fields;
+        return new \WP_REST_Response($fields, 200);
     }
 
     /**
-     * Get all unique meta fields and their values based on Vehicle Meta.
+     * Get all unique meta fields and their values based on Vehicle Meta, including min and max for number fields.
      *
      * @return array
      */
@@ -47,30 +58,50 @@ class VehicleGetFields
         $fields = [];
 
         // Fetch all fields from Vehicle/Meta
-        $meta_definitions = VehicleMetaFields::getMetas();
+        $meta_definitions = VehicleMetaFields::getMetasFlat();
         $meta_keys = [];
 
         // Collect meta keys from Vehicle Meta definitions
-        foreach ($meta_definitions as $section) {
-            foreach ($section['fields'] as $field) {
-                $meta_keys[$field['name']] = $field['type'];
-            }
+        foreach ($meta_definitions as $field) {
+            $meta_keys[$field['name']] = $field['type'];
         }
 
         // Fetch unique values for each meta key
         foreach ($meta_keys as $key => $type) {
-            // Filter string values to 64 characters or less
-            if ($type === 'text') {
+            // Handle number fields to provide min and max values
+            if ($type === 'number') {
+                $min_value = $wpdb->get_var($wpdb->prepare("
+                SELECT MIN(CAST(meta_value AS UNSIGNED)) 
+                FROM {$wpdb->postmeta}
+                WHERE meta_key = %s AND meta_value REGEXP '^[0-9]+$'
+            ", $key));
+
+                $max_value = $wpdb->get_var($wpdb->prepare("
+                SELECT MAX(CAST(meta_value AS UNSIGNED)) 
+                FROM {$wpdb->postmeta}
+                WHERE meta_key = %s AND meta_value REGEXP '^[0-9]+$'
+            ", $key));
+
+                $fields[$key] = [
+                    'type' => $type,
+                    'min' => $min_value ?: 0,  // Default to 0 if no value is found
+                    'max' => $max_value ?: 0,  // Default to 0 if no value is found
+                ];
+
+                // Handle text fields, limiting string length to 64 characters or less
+            } elseif ($type === 'text') {
                 $values = $wpdb->get_col($wpdb->prepare("
-                    SELECT DISTINCT meta_value
-                    FROM {$wpdb->postmeta}
-                    WHERE meta_key = %s AND CHAR_LENGTH(meta_value) <= 64
-                ", $key));
+                SELECT DISTINCT meta_value
+                FROM {$wpdb->postmeta}
+                WHERE meta_key = %s AND CHAR_LENGTH(meta_value) <= 64
+            ", $key));
 
                 $fields[$key] = [
                     'type' => $type,
                     'values' => $values,
                 ];
+
+                // Handle other types
             } else {
                 $fields[$key] = [
                     'type' => $type,

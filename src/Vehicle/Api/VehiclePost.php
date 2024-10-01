@@ -9,7 +9,7 @@ class VehiclePost extends VehicleRestBase
     public function registerRoutes(): void
     {
         register_rest_route($this->api_namespace . '/' . $this->api_version, '/' . $this->api_post_type, [
-            'methods' => 'POST',
+            'methods' => \WP_REST_Server::CREATABLE,
             'callback' => [$this, 'createVehicle'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);

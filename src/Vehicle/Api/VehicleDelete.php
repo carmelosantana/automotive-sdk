@@ -9,7 +9,7 @@ class VehicleDelete extends VehicleRestBase
     public function registerRoutes(): void
     {
         register_rest_route($this->api_namespace . '/' . $this->api_version, '/' . $this->api_post_type . '/(?P<id>\d+)', [
-            'methods' => 'DELETE',
+            'methods' => \WP_REST_Server::DELETABLE,
             'callback' => [$this, 'deleteVehicle'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);

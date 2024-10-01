@@ -9,7 +9,7 @@ class VehiclePut extends VehicleRestBase
     public function registerRoutes(): void
     {
         register_rest_route($this->api_namespace . '/' . $this->api_version, '/' . $this->api_post_type . '/(?P<id>\d+)', [
-            'methods' => 'POST',
+            'methods' => \WP_REST_Server::EDITABLE,
             'callback' => [$this, 'updateVehicle'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
+use WP;
 use WpAutos\AutomotiveSdk\Vehicle\Fields;
 
 class VehicleRestBase
 {
-    protected string $api_namespace = 'api';
+    protected string $api_namespace = 'automotive-sdk';
     protected string $api_post_type = 'vehicles';
     protected string $api_version = 'v1';
 
@@ -23,10 +24,13 @@ class VehicleRestBase
         // Child classes will implement this
     }
 
-    // Check if the current user has permission to modify vehicles
-    public function checkPermissions(): bool
+    public function checkPermissions(): \WP_Error|bool
     {
-        return current_user_can('edit_others_posts');
+        if (!current_user_can('edit_posts')) {
+            return new \WP_Error('rest_forbidden', esc_html__('You cannot access this resource.', 'automotive-sdk'), ['status' => 401]);
+        }
+
+        return true;
     }
 
     // Generate vehicle title from  $vehicle[year] $vehicle[make] $vehicle[model] $vehicle[trim]
@@ -40,7 +44,7 @@ class VehicleRestBase
     {
         $metas = [];
         $fields = Fields::getMetasFlat();
-        
+
         foreach ($fields as $field) {
             $value = get_post_meta($post->ID, $field['name'], true);
             if ($value !== '') {
