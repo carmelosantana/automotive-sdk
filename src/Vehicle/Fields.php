@@ -255,6 +255,16 @@ class Fields
         ];
     }
 
+    public static function getMetasFlat(): array
+    {
+        $fields = self::getMetas();
+        $flat_fields = [];
+        foreach ($fields as $section) {
+            $flat_fields = array_merge($flat_fields, $section['fields']);
+        }
+        return $flat_fields;
+    }
+
     /**
      * Get a structured array of taxonomies.
      * Used for registering and referencing taxonomies for the vehicle post type.
@@ -295,5 +305,17 @@ class Fields
                 'hierarchical' => false,
             ],
         ];
+    }
+
+    /**
+     * Get the names of the taxonomies.
+     *
+     * @return array
+     */
+    public static function getTaxonomiesNames(): array
+    {
+        return array_map(function ($taxonomy) {
+            return $taxonomy['name'];
+        }, self::getTaxonomies());
     }
 }
