@@ -67,17 +67,17 @@ class MetaFields
     protected function renderMetaField(array $field): void
     {
         global $post;
-        $value = get_post_meta($post->ID, $field['id'], true);
+        $value = get_post_meta($post->ID, $field['name'], true);
 
         switch ($field['type']) {
             case 'group':
                 echo '<div><h3>' . esc_html($field['label']) . '</h3>';
                 foreach ($field['fields'] as $sub_field_key => $sub_field_group) {
                     echo '<div style="background-color: #f1f1f1; border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin: 10px 0;">';
-                    $field_value = get_post_meta($post->ID, $field['id'], true);
+                    $field_value = get_post_meta($post->ID, $field['name'], true);
                     echo '<h4>' . esc_html($sub_field_group['label'] ?? ucwords($sub_field_key)) . '</h4>';
                     foreach ($sub_field_group['fields'] as $sub_field) {
-                        $sub_value = $field_value[$sub_field['id']] ?? '';
+                        $sub_value = $field_value[$sub_field['name']] ?? '';
                         $this->renderFieldType($sub_field, $sub_value);
                     }
                     echo '</div>';
@@ -88,7 +88,7 @@ class MetaFields
             case 'post_multi_select':
                 $selected_posts = $value ?: [];
                 $posts = $this->getPosts($field['post_type']);
-                echo '<select name="' . esc_attr($field['id']) . '[]" multiple>';
+                echo '<select name="' . esc_attr($field['name']) . '[]" multiple>';
                 foreach ($posts as $post_id => $post_title) {
                     $selected = in_array($post_id, $selected_posts) ? 'selected' : '';
                     echo '<option value="' . esc_attr($post_id) . '" ' . $selected . '>' . esc_html($post_title) . '</option>';
@@ -105,7 +105,7 @@ class MetaFields
     // Render different field types
     protected function renderFieldType(array $field, string $value): void
     {
-        $slug = $field['id'];
+        $slug = $field['name'];
         echo '<div style="background-color: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin: 10px 0;">';
 
         switch ($field['type']) {
@@ -130,9 +130,9 @@ class MetaFields
 
     protected function renderFieldLabel(array $field): void
     {
-        $label = $field['label'] ?? ucwords($field['id']);
-        echo ' <label for="' . esc_attr($field['id']) . '">' . esc_html($label) . '</label>';
-        echo ' <small style="font-family: monospace; background-color: #ddd; padding: 2px 5px; border-radius: 3px;">' . esc_html($field['id']) . '</small>';
+        $label = $field['label'] ?? ucwords($field['name']);
+        echo ' <label for="' . esc_attr($field['name']) . '">' . esc_html($label) . '</label>';
+        echo ' <small style="font-family: monospace; background-color: #ddd; padding: 2px 5px; border-radius: 3px;">' . esc_html($field['name']) . '</small>';
     }
 
     /**
@@ -145,15 +145,15 @@ class MetaFields
         switch ($field['type']) {
             case 'checkbox':
                 $checked = $value ? 'checked' : '';
-                echo '<input type="checkbox" name="' . esc_attr($field['id']) . '" value="1" ' . $checked . ' />';
+                echo '<input type="checkbox" name="' . esc_attr($field['name']) . '" value="1" ' . $checked . ' />';
                 break;
 
             case 'textarea':
-                echo '<textarea name="' . esc_attr($field['id']) . '">' . esc_textarea($value) . '</textarea>';
+                echo '<textarea name="' . esc_attr($field['name']) . '">' . esc_textarea($value) . '</textarea>';
                 break;
 
             case 'select':
-                echo '<select name="' . esc_attr($field['id']) . '">';
+                echo '<select name="' . esc_attr($field['name']) . '">';
                 foreach ($field['options'] as $option_value => $option_label) {
                     $selected = ($value == $option_value) ? 'selected' : '';
                     echo '<option value="' . esc_attr($option_value) . '" ' . $selected . '>' . esc_html($option_label) . '</option>';
@@ -162,7 +162,7 @@ class MetaFields
                 break;
 
             case 'multi-select':
-                echo '<select name="' . esc_attr($field['id']) . '[]" multiple>';
+                echo '<select name="' . esc_attr($field['name']) . '[]" multiple>';
                 $values = is_array($value) ? $value : [];
                 foreach ($field['options'] as $option_value => $option_label) {
                     $selected = in_array($option_value, $values) ? 'selected' : '';
@@ -175,14 +175,14 @@ class MetaFields
                 foreach ($field['options'] as $option_value => $option_label) {
                     $checked = ($value == $option_value) ? 'checked' : '';
                     echo '<label>';
-                    echo '<input type="radio" name="' . esc_attr($field['id']) . '" value="' . esc_attr($option_value) . '" ' . $checked . ' />';
+                    echo '<input type="radio" name="' . esc_attr($field['name']) . '" value="' . esc_attr($option_value) . '" ' . $checked . ' />';
                     echo esc_html($option_label);
                     echo '</label><br>';
                 }
                 break;
 
             case 'text':
-                echo '<input type="text" name="' . esc_attr($field['id']) . '" value="' . esc_attr($value) . '" />';
+                echo '<input type="text" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
                 break;
         }
     }
@@ -206,20 +206,20 @@ class MetaFields
                     $group_data = [];
                     foreach ($field['fields'] as $sub_field_group) {
                         foreach ($sub_field_group['fields'] as $sub_field) {
-                            if (isset($_POST[$sub_field['id']])) {
-                                $group_data[$sub_field['id']] = sanitize_text_field($_POST[$sub_field['id']]);
+                            if (isset($_POST[$sub_field['name']])) {
+                                $group_data[$sub_field['name']] = sanitize_text_field($_POST[$sub_field['name']]);
                             }
                         }
                     }
-                    update_post_meta($post_id, $field['id'], $group_data);
-                } elseif ($field['type'] === 'multi-select') {
-                    $selected_values = isset($_POST[$field['id']]) ? array_map('sanitize_text_field', $_POST[$field['id']]) : [];
-                    update_post_meta($post_id, $field['id'], $selected_values);
+                    update_post_meta($post_id, $field['name'], $group_data);
+                } elseif ($field['type'] === 'multi-select' or $field['type'] === 'post_multi_select') {
+                    $selected_values = isset($_POST[$field['name']]) ? array_map('sanitize_text_field', $_POST[$field['name']]) : [];
+                    update_post_meta($post_id, $field['name'], $selected_values);
                 } else {
-                    if (isset($_POST[$field['id']])) {
-                        update_post_meta($post_id, $field['id'], sanitize_text_field($_POST[$field['id']]));
+                    if (isset($_POST[$field['name']])) {
+                        update_post_meta($post_id, $field['name'], sanitize_text_field($_POST[$field['name']]));
                     } elseif ($field['type'] === 'checkbox') {
-                        update_post_meta($post_id, $field['id'], '0'); // Handle unchecked checkboxes
+                        update_post_meta($post_id, $field['name'], '0'); // Handle unchecked checkboxes
                     }
                 }
             }

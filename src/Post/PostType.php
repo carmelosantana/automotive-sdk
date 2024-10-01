@@ -130,7 +130,7 @@ class PostType
     public function registerTaxonomies(): void
     {
         foreach ($this->post_taxonomies as $taxonomy) {
-            register_taxonomy($taxonomy['id'], $this->post_type, [
+            register_taxonomy($taxonomy['name'], $this->post_type, [
                 'label' => $taxonomy['label'],
                 'hierarchical' => true,
                 'show_ui' => true,
@@ -147,7 +147,7 @@ class PostType
         // We need to loop through fields inside sections.
         foreach ($this->post_meta_fields as $section) {
             foreach ($section['fields'] as $field) {
-                $columns[$field['id']] = $field['label'];
+                $columns[$field['name']] = $field['label'];
             }
         }
         return $columns;
@@ -160,8 +160,8 @@ class PostType
     {
         foreach ($this->post_meta_fields as $section) {
             foreach ($section['fields'] as $field) {
-                if ($column === $field['id']) {
-                    $value = get_post_meta($post_id, $field['id'], true);
+                if ($column === $field['name']) {
+                    $value = get_post_meta($post_id, $field['name'], true);
                     if (is_array($value)) {
                         echo esc_html(implode(', ', $value));
                     } else {
