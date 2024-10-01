@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle;
 
-
-
 class PostType
 {
     // This is the vehicle post type.
@@ -60,7 +58,7 @@ class PostType
             'supports' => ['title', 'editor', 'thumbnail'],
             'menu_icon' => 'dashicons-car',
             'taxonomies' => array_column(Fields::getTaxonomies(), 'name'),
-            'menu_position' => 52,
+            'menu_position' => 55,
         ]);
     }
 
