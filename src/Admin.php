@@ -12,6 +12,7 @@ class Admin
         new Admin\PageDashboard();
         new Admin\PageImport();
         new Admin\PageExport();
+        new Admin\PageMarketplace();
         new Admin\PageOptions();
 
         // Filters
