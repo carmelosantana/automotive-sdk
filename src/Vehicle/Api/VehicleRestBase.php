@@ -13,7 +13,7 @@ class VehicleRestBase
     protected string $api_post_type = 'vehicles';
     protected string $api_version = 'v1';
 
-    public function __construct()
+    public function register(): void
     {
         add_action('rest_api_init', [$this, 'registerRoutes']);
     }

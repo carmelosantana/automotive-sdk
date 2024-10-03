@@ -23,11 +23,11 @@ class Loader
 
     public function setupVehicleApi()
     {
-        new Vehicle\Api\VehicleGet();
-        new Vehicle\Api\VehicleGetFields();
-        new Vehicle\Api\VehiclePost();
-        new Vehicle\Api\VehiclePut();
-        new Vehicle\Api\VehicleDelete();
+        (new Vehicle\Api\VehicleGet())->register();
+        (new Vehicle\Api\VehicleGetFields())->register();
+        (new Vehicle\Api\VehiclePost())->register();
+        (new Vehicle\Api\VehiclePut())->register();
+        (new Vehicle\Api\VehicleDelete())->register();
     }
 
     public function setupBlocks()
