@@ -24,12 +24,15 @@ class VehicleGetFields extends VehicleRestBase
      * @param \WP_REST_Request $request
      * @return \WP_REST_Response
      */
-    public function getFields(\WP_REST_Request $request): \WP_REST_Response
+    public function getFields(\WP_REST_Request $request = null, $response = 'api'): \WP_REST_Response|array
     {
         // Try to get the cached result first
         $fields = get_transient('vehicle_fields_data');
         if ($fields !== false) {
-            return new \WP_REST_Response($fields, 200);
+            if ($response === 'api') {
+                return new \WP_REST_Response($fields, 200);
+            }
+            return $fields;
         }
 
         // Retrieve meta fields from Vehicle Meta and their unique values
@@ -44,7 +47,10 @@ class VehicleGetFields extends VehicleRestBase
         // Cache the result for 5 minutes
         set_transient('vehicle_fields_data', $fields, 60 * MINUTE_IN_SECONDS);
 
-        return new \WP_REST_Response($fields, 200);
+        if ($response === 'api') {
+            return new \WP_REST_Response($fields, 200);
+        }
+        return $fields;
     }
 
     /**
