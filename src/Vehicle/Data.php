@@ -105,12 +105,6 @@ class Data
             'year' => $this->getTaxonomyTerms($vehicle_post->ID, 'year'),
         ];
 
-        // Get all meta values
-        $fields = (new VehicleGetFields())->getFields();
-        foreach ($fields as $key => $details) {
-            $vehicle_data[$key] = get_post_meta($vehicle_post->ID, $key, true);
-        }
-
         return $vehicle_data;
     }
 
