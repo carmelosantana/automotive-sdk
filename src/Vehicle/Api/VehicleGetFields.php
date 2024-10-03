@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
-use WpAutos\AutomotiveSdk\Api\RestApiBase;
 use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleMetaFields;
 
 class VehicleGetFields extends VehicleRestBase
