@@ -207,6 +207,11 @@ class PostType
         return $this;
     }
 
+    public function getMetaFields(): array
+    {
+        return $this->post_meta_fields;
+    }
+
     public function setTaxonomies(array $post_taxonomies): self
     {
         $this->post_taxonomies = $post_taxonomies;
