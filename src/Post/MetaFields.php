@@ -94,11 +94,58 @@ class MetaFields
                     echo '<option value="' . esc_attr($post_id) . '" ' . $selected . '>' . esc_html($post_title) . '</option>';
                 }
                 echo '</select>';
+                echo '</div>';
+                break;
+
+            case 'select_from_media_library':
+            case 'image':
+                echo '<div><h3>' . esc_html($field['label']) . '</h3>';
+                $this->renderDescription($field);
+                $selected_img_id = $value ?: '';
+                $selected_img_url = wp_get_attachment_image_url($selected_img_id, 'thumbnail');
+                echo '<input type="hidden" name="' . esc_attr($field['name']) . '" value="' . esc_attr($selected_img_id) . '" />';
+                echo '<img src="' . esc_url($selected_img_url) . '" style="max-width: 100px; max-height: 100px;" />';
+                echo '<button class="button" id="select-img-btn">Select Image</button>';
+                echo '</div>';
+
+                // Enqueue media library scripts
+                // wp.media is not a function
+                wp_enqueue_media();
+                add_action('admin_footer', function () use ($field) {
+?>
+                    <script>
+                        jQuery(document).ready(function($) {
+                            $('#select-img-btn').on('click', function(e) {
+                                e.preventDefault();
+                                var image = wp.media({
+                                        title: 'Select or Upload Image',
+                                        multiple: false
+                                    }).open()
+                                    .on('select', function(e) {
+                                        var uploaded_image = image.state().get('selection').first();
+                                        var image_url = uploaded_image.toJSON().url;
+                                        var image_id = uploaded_image.toJSON().id;
+                                        $('input[name="<?php echo esc_attr($field['name']); ?>"]').val(image_id);
+                                        $('img').attr('src', image_url);
+                                    });
+                            });
+                        });
+                    </script>
+<?php
+                });
                 break;
 
             default:
                 $this->renderFieldType($field, $value);
                 break;
+        }
+    }
+
+    // render description
+    protected function renderDescription(array $field): void
+    {
+        if (!empty($field['description'])) {
+            echo '<p class="description">' . esc_html($field['description']) . '</p>';
         }
     }
 
@@ -183,6 +230,26 @@ class MetaFields
 
             case 'text':
                 echo '<input type="text" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'number':
+                echo '<input type="number" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'email':
+                echo '<input type="email" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'url':
+                echo '<input type="url" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'password':
+                echo '<input type="password" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'hidden':
+                echo '<input type="hidden" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
                 break;
         }
     }
