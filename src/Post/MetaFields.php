@@ -51,9 +51,7 @@ class MetaFields
      */
     protected function renderMetaSection(array $section): void
     {
-        if (isset($section['description'])) {
-            echo '<p class="description">' . esc_html($section['description']) . '</p>';
-        }
+        $this->renderDescription($section);
 
         // Loop through all fields in the section and render them
         foreach ($section['fields'] as $field) {
@@ -87,6 +85,8 @@ class MetaFields
                 break;
 
             case 'post_multi_select':
+                echo '<div><h3>' . esc_html($field['label']) . '</h3>';
+                $this->renderDescription($field);
                 $selected_posts = $value ?: [];
                 $posts = $this->getPosts($field['post_type']);
                 echo '<select name="' . esc_attr($field['name']) . '[]" multiple>';
