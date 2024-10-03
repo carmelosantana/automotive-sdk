@@ -72,12 +72,13 @@ class MetaFields
         switch ($field['type']) {
             case 'group':
                 echo '<div><h3>' . esc_html($field['label']) . '</h3>';
+                $this->renderDescription($field);
                 foreach ($field['fields'] as $sub_field_key => $sub_field_group) {
                     echo '<div style="background-color: #f1f1f1; border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin: 10px 0;">';
-                    $field_value = get_post_meta($post->ID, $field['name'], true);
                     echo '<h4>' . esc_html($sub_field_group['label'] ?? ucwords($sub_field_key)) . '</h4>';
+                    $this->renderDescription($sub_field_group);
                     foreach ($sub_field_group['fields'] as $sub_field) {
-                        $sub_value = $field_value[$sub_field['name']] ?? '';
+                        $sub_value = $value[$sub_field['name']] ?? '';
                         $this->renderFieldType($sub_field, $sub_value);
                     }
                     echo '</div>';
