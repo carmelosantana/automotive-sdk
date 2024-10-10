@@ -11,6 +11,7 @@ class PostType
     protected bool $has_archive = true;
     protected string $show_in_menu = ASDK;
     protected bool $show_rest = true;
+    protected bool $show_in_graphql = true;
     protected bool $post_public = true;
     protected array $post_supports = ['title', 'editor'];
     protected string $post_type = '';
@@ -130,6 +131,7 @@ class PostType
             'has_archive' => $this->has_archive,
             'supports' => $this->post_supports,
             'show_in_menu' => $this->show_in_menu,
+            'show_in_graphql' => $this->show_in_graphql,
         ]);
     }
 

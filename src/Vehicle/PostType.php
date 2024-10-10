@@ -55,6 +55,7 @@ class PostType
             'has_archive' => true,
             'rewrite' => ['slug' => 'vehicles'],
             'show_in_rest' => true,
+            'show_in_graphql' => true,
             'supports' => ['title', 'editor', 'thumbnail'],
             'menu_icon' => 'dashicons-car',
             'taxonomies' => array_column(Fields::getTaxonomies(), 'name'),
