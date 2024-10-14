@@ -182,12 +182,12 @@ class Page
         return $slug;
     }
 
-    public function generatePageUrl(string $page, array $args = []): string
+    public function generatePageUrl(string $page, array $args = [], $php_page='admin.php'): string
     {
         $args = [
             'page' => $this->generatePageSlug($page),
         ];
-        return add_query_arg($args, admin_url('admin.php'));
+        return add_query_arg($args, admin_url($php_page));
     }
 
     public function generateTabUrl(string $page, array $additional = []): string
