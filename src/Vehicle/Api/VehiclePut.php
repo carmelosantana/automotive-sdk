@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
+use WpAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
+
 class VehiclePut extends VehicleRestBase
 {
     public function registerRoutes(): void
@@ -23,6 +25,7 @@ class VehiclePut extends VehicleRestBase
         $updated = wp_update_post([
             'ID' => $vehicle_id,
             'post_title' => $vehicle_data['title'],
+            'post_name' => (new VehicleData())->generateSlug($vehicle_data),
         ]);
 
         if (is_wp_error($updated)) {
