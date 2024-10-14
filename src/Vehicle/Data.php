@@ -4,11 +4,30 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle;
 
-use WpAutos\AutomotiveSdk\Api\Vehicles\VehicleGetFields;
-
 class Data
 {
     public $vehicle;
+
+    public function generateSlug(array $vehicle): string
+    {
+        return sanitize_title(strtolower($vehicle['vin'] . '-' . $vehicle['year'] . '-' . $vehicle['make'] . '-' . $vehicle['model'] . '-' . $vehicle['trim']));
+
+    }
+
+    public function generateTitle(array $vehicle): string
+    {
+        return trim(preg_replace('/\s+/', ' ', $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'] . ' ' . $vehicle['trim']));
+    }
+
+    public function get(string $key, $default = null)
+    {
+        return $this->vehicle[$key] ?? $default;
+    }
+
+    public function getVehicle()
+    {
+        return $this->vehicle;
+    }
 
     /**
      * Retrieve a vehicle by its ID.
@@ -59,6 +78,31 @@ class Data
     }
 
     /**
+     * Build a vehicle data array from a post object.
+     *
+     * @param \WP_Post $vehicle_post The vehicle post object.
+     * @return array The vehicle data including taxonomies and meta values.
+     */
+    private function buildVehicleData(\WP_Post $vehicle_post): array
+    {
+        $vehicle_data = [
+            'id' => $vehicle_post->ID,
+            'title' => $vehicle_post->post_title,
+            'make' => $this->getTaxonomyTerms($vehicle_post->ID, 'make'),
+            'model' => $this->getTaxonomyTerms($vehicle_post->ID, 'model'),
+            'trim' => $this->getTaxonomyTerms($vehicle_post->ID, 'trim'),
+            'year' => $this->getTaxonomyTerms($vehicle_post->ID, 'year'),
+        ];
+
+        return $vehicle_data;
+    }
+
+    public function setVehicle($vehicle)
+    {
+        $this->vehicle = $vehicle;
+    }
+
+    /**
      * Query vehicles based on various parameters.
      *
      * @param array $meta_query The meta query array to filter vehicles.
@@ -86,41 +130,6 @@ class Data
         }
 
         return $vehicles;
-    }
-
-    /**
-     * Build a vehicle data array from a post object.
-     *
-     * @param \WP_Post $vehicle_post The vehicle post object.
-     * @return array The vehicle data including taxonomies and meta values.
-     */
-    private function buildVehicleData(\WP_Post $vehicle_post): array
-    {
-        $vehicle_data = [
-            'id' => $vehicle_post->ID,
-            'title' => $vehicle_post->post_title,
-            'make' => $this->getTaxonomyTerms($vehicle_post->ID, 'make'),
-            'model' => $this->getTaxonomyTerms($vehicle_post->ID, 'model'),
-            'trim' => $this->getTaxonomyTerms($vehicle_post->ID, 'trim'),
-            'year' => $this->getTaxonomyTerms($vehicle_post->ID, 'year'),
-        ];
-
-        return $vehicle_data;
-    }
-
-    public function setVehicle($vehicle)
-    {
-        $this->vehicle = $vehicle;
-    }
-
-    public function getVehicle()
-    {
-        return $this->vehicle;
-    }
-
-    public function getVehicleData(string $key, $default = null)
-    {
-        return $this->vehicle[$key] ?? $default;
     }
 
     /**

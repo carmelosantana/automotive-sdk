@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WpAutos\AutomotiveSdk\Import;
 
 use WpAutos\AutomotiveSdk\Admin\File;
+use WpAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
 use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
 
 class Csv
@@ -64,6 +65,8 @@ class Csv
         $vehicles_added = [];
         $vehicles_updated = [];
 
+        $vehicleData = new VehicleData();
+
         foreach ($file_data as $data) {
             $vehicle = $this->mapDataToVehicle($data); // Map CSV data to vehicle fields
             $vehicle = $this->parseData($vehicle); // Parse and filter the data
@@ -73,11 +76,18 @@ class Csv
 
             // Check if the vehicle exists by VIN
             $vin_exists = get_posts(['post_type' => 'vehicle', 'meta_key' => 'vin', 'meta_value' => $vehicle['vin']]);
+
+            // Generate the title for the vehicle post
+            $title = $vehicleData->generateTitle($vehicle);
+
+            // Generate the slug for the vehicle post
+            $slug = $vehicleData->generateSlug($vehicle);
+
             if (count($vin_exists) > 0) {
                 $vehicle_id = $vin_exists[0]->ID;
                 wp_update_post([
                     'ID' => $vehicle_id,
-                    'post_title' => $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'],
+                    'post_title' => $title,
                 ]);
                 $vehicles_updated[] = $vehicle_id;
 
@@ -95,8 +105,9 @@ class Csv
             } else {
                 // Insert new vehicle post
                 $vehicle_id = wp_insert_post([
+                    'post_name' => $slug,
                     'post_type' => 'vehicle',
-                    'post_title' => $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'],
+                    'post_title' => $title,
                     'post_status' => 'publish',
                 ]);
                 $vehicles_added[] = $vehicle_id;

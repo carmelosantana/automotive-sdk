@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WpAutos\AutomotiveSdk\Vehicle\Api;
 
+use WpAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
 use WpAutos\AutomotiveSdk\Vehicle\Fields;
 
 class VehicleRestBase
@@ -30,12 +31,6 @@ class VehicleRestBase
         }
 
         return true;
-    }
-
-    // Generate vehicle title from  $vehicle[year] $vehicle[make] $vehicle[model] $vehicle[trim]
-    protected function generateVehicleTitle(array $vehicle): string
-    {
-        return trim(preg_replace('/\s+/', ' ', $vehicle['year'] . ' ' . $vehicle['make'] . ' ' . $vehicle['model'] . ' ' . $vehicle['trim']));
     }
 
     // Prepare vehicle data for output request
@@ -120,7 +115,7 @@ class VehicleRestBase
         }
 
         if (empty($request->get_param('title'))) {
-            $request->set_param('title', $this->generateVehicleTitle($request->get_params()));
+            $request->set_param('title', (new VehicleData())->generateTitle($request->get_params()));
         }
 
         if (empty($request->get_param('content'))) {
