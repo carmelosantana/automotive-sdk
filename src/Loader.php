@@ -9,7 +9,6 @@ class Loader
     public function __construct()
     {
         $this->setupAdmin();
-        $this->setupBlocks();
         $this->setupImportProfile();
         $this->setupRender();
         $this->setupVehicle();
@@ -28,11 +27,6 @@ class Loader
         (new Vehicle\Api\VehiclePost())->register();
         (new Vehicle\Api\VehiclePut())->register();
         (new Vehicle\Api\VehicleDelete())->register();
-    }
-
-    public function setupBlocks()
-    {
-        new Blocks\Register();
     }
 
     public function setupImportProfile()
