@@ -59,14 +59,19 @@ class Options
                 'section_title' => __('Disclaimers for new and used vehicles.', 'automotive-sdk'),
                 'fields' => [
                     [
+                        'name' => 'disclaimer_default',
+                        'type' => 'textarea',
+                        'label' => __('Default disclaimer on any non vehicle specific page.', 'automotive-sdk'),
+                    ],                    
+                    [
                         'name' => 'disclaimer_new',
                         'type' => 'textarea',
-                        'label' => __('Disclaimer for new vehicles', 'automotive-sdk'),
+                        'label' => __('Disclaimer for new vehicles.', 'automotive-sdk'),
                     ],
                     [
                         'name' => 'disclaimer_used',
                         'type' => 'textarea',
-                        'label' => __('Disclaimer for used vehicles', 'automotive-sdk'),
+                        'label' => __('Disclaimer for used vehicles.', 'automotive-sdk'),
                     ],
                 ],
             ],
