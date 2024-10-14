@@ -16,7 +16,7 @@ class Fields
     {
         return [
             'specifications' => [
-                'description' => __('Details for this particular vehicle.', 'alpaca-bot'),
+                'description' => __('Details for this particular vehicle.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'vin',
@@ -81,7 +81,7 @@ class Fields
                 ],
             ],
             'price' => [
-                'description' => __('Pricing, MSRP, financing.', 'alpaca-bot'),
+                'description' => __('Pricing, MSRP, financing.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'internet_price',
@@ -116,7 +116,7 @@ class Fields
                 ],
             ],
             'media' => [
-                'description' => __('Images, videos, and other media.', 'alpaca-bot'),
+                'description' => __('Images, videos, and other media.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'photo_urls',
@@ -132,7 +132,7 @@ class Fields
                 ],
             ],
             'rooftop' => [
-                'description' => __('Dealership location details, URL, and contact information.', 'alpaca-bot'),
+                'description' => __('Dealership location details, URL, and contact information.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'dealer_name',
@@ -167,7 +167,7 @@ class Fields
                 ],
             ],
             'warranty' => [
-                'description' => __('Warranty information for the vehicle.', 'alpaca-bot'),
+                'description' => __('Warranty information for the vehicle.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'certified',
@@ -192,7 +192,7 @@ class Fields
                 ],
             ],
             'additional_info' => [
-                'description' => __('Additional information about the vehicle.', 'alpaca-bot'),
+                'description' => __('Additional information about the vehicle.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'internet_special',
