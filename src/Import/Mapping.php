@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Import;
+namespace WipyAutos\AutomotiveSdk\Import;
 
 class Mapping
 {

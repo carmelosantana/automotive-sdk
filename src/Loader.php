@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk;
+namespace WipyAutos\AutomotiveSdk;
 
 class Loader
 {
@@ -13,6 +13,7 @@ class Loader
         $this->setupRender();
         $this->setupVehicle();
         $this->setupVehicleApi();
+        $this->setupUpdater();
     }
 
     public function setupAdmin()
@@ -46,5 +47,10 @@ class Loader
         new Vehicle\Data();
         new Vehicle\Meta();
         new Vehicle\Search();
+    }
+
+    public function setupUpdater()
+    {
+        new Edd\Update();
     }
 }

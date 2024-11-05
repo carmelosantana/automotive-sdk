@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle\Api;
+namespace WipyAutos\AutomotiveSdk\Vehicle\Api;
 
-use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleMetaFields;
+use WipyAutos\AutomotiveSdk\Vehicle\Fields as VehicleMetaFields;
 
 class VehicleGetFields extends VehicleRestBase
 {

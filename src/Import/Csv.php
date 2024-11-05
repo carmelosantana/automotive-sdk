@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Import;
+namespace WipyAutos\AutomotiveSdk\Import;
 
-use WpAutos\AutomotiveSdk\Admin\File;
-use WpAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
-use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
+use WipyAutos\AutomotiveSdk\Admin\File;
+use WipyAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
+use WipyAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
 
 class Csv
 {
@@ -72,7 +72,7 @@ class Csv
             $vehicle = $this->parseData($vehicle); // Parse and filter the data
 
             // Apply any filters to vehicle data before importing
-            $vehicle = apply_filters('wpautos_import_vehicle_data', $vehicle);
+            $vehicle = apply_filters('WipyAutos_import_vehicle_data', $vehicle);
 
             // Check if the vehicle exists by VIN
             $vin_exists = get_posts(['post_type' => 'vehicle', 'meta_key' => 'vin', 'meta_value' => $vehicle['vin']]);

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Import\Mapping;
+use WipyAutos\AutomotiveSdk\Import\Mapping;
 
 /**
  * Handles the loading and processing of file data including headers and templates.

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Options;
+use WipyAutos\AutomotiveSdk\Options;
 
 class PageOptions extends Page
 {
@@ -16,6 +16,8 @@ class PageOptions extends Page
     protected $tab_actions = [
         'dealer' => 'Dealer',
         'legal' => 'Legal',
+        'output' => 'Output',
+        'cache' => 'Cache',
         'license' => 'License',
     ];
 
@@ -89,6 +91,58 @@ class PageOptions extends Page
         $value = get_option($field['name'], '');
 
         switch ($field['type']) {
+            case 'checkbox':
+                echo '<input type="checkbox" name="' . esc_attr($field['name']) . '" value="1" ' . checked($value, '1', false) . ' />';
+                break;
+
+            case 'post_checkbox':
+                $args = [
+                    'post_type' => $field['post_type'],
+                    'posts_per_page' => -1,
+                ];
+                $posts = get_posts($args);
+
+                foreach ($posts as $post) {
+                    $meta_key = $field['name'] . '_' . $post->ID;
+                    $meta_value = get_option($meta_key, '');
+                    echo '<input type="checkbox" name="' . esc_attr($meta_key) . '" value="1" ' . checked($meta_value, '1', false) . ' /> ' . esc_html($post->post_title) . '<br>';
+                }
+                break;
+
+            case 'nonce':
+                wp_nonce_field($field['name'], $field['name']);
+                break;
+
+            case 'number':
+                echo '<input type="number" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'select':
+                echo '<select name="' . esc_attr($field['name']) . '">';
+                foreach ($field['options'] as $option_value => $option_label) {
+                    echo '<option value="' . esc_attr($option_value) . '" ' . selected($value, $option_value, false) . '>' . esc_html($option_label) . '</option>';
+                }
+                echo '</select>';
+                break;
+
+            case 'submit':
+                echo '<input type="submit" name="' . esc_attr($field['name']) . '" value="' . esc_attr($field['label']) . '" />';
+                break;
+
+            case 'post_select':
+                $args = [
+                    'post_type' => $field['post_type'],
+                    'posts_per_page' => -1,
+                ];
+                $posts = get_posts($args);
+
+                echo '<select name="' . esc_attr($field['name']) . '">';
+                echo '<option value="">Select a post</option>';
+                foreach ($posts as $post) {
+                    echo '<option value="' . esc_attr($post->ID) . '" ' . selected($value, $post->ID, false) . '>' . esc_html($post->post_title) . '</option>';
+                }
+                echo '</select>';
+                break;
             case 'text':
                 echo '<input type="text" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
                 break;

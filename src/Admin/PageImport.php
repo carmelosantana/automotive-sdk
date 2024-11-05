@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Admin\File;
-use WpAutos\AutomotiveSdk\Admin\Files;
-use WpAutos\AutomotiveSdk\Import\Csv;
-use WpAutos\AutomotiveSdk\Import\Mapping;
+use WipyAutos\AutomotiveSdk\Admin\File;
+use WipyAutos\AutomotiveSdk\Admin\Files;
+use WipyAutos\AutomotiveSdk\Import\Csv;
+use WipyAutos\AutomotiveSdk\Import\Mapping;
 
 class PageImport extends Page
 {

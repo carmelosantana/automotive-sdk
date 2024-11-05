@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk;
+namespace WipyAutos\AutomotiveSdk;
 
 class Admin
 {

@@ -1,6 +1,4 @@
-# [Automotive SDK](https://wpautos.dev)
-
-[`wpautos.dev`](https://wpautos.dev) [`wipyautos.com`](https://wipyautos.com)
+# [Automotive SDK](https://wipyautos.com)
 
 - [Vehicles](#vehicles)
   - [Endpoints](#endpoints)

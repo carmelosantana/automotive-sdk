@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle;
+namespace WipyAutos\AutomotiveSdk\Vehicle;
 
 class Meta
 {

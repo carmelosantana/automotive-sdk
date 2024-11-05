@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Post;
+namespace WipyAutos\AutomotiveSdk\Post;
 
-use WpAutos\AutomotiveSdk\Post\MetaFields;
+use WipyAutos\AutomotiveSdk\Post\MetaFields;
 
 class PostType
 {

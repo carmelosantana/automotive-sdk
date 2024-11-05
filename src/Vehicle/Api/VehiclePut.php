@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle\Api;
+namespace WipyAutos\AutomotiveSdk\Vehicle\Api;
 
-use WpAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
+use WipyAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
 
 class VehiclePut extends VehicleRestBase
 {
