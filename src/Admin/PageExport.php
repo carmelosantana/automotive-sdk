@@ -2,19 +2,16 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Vehicle\Data;
+use WipyAutos\AutomotiveSdk\Vehicle\Data;
 
 class PageExport extends Page
 {
     protected $page_slug = 'export';
     protected $page_title = 'Export';
     protected $menu_title = 'Export';
-    protected $page_description = 'Utilities for exporting vehicle datasets.';
-    protected $page_actions = [
-        ['page' => 'export', 'description' => 'Export'],
-    ];
+    protected $sub_menu_position = 10;
 
     public function __construct()
     {
@@ -26,7 +23,7 @@ class PageExport extends Page
 
     public function adminContent(): void
     {
-        echo '<h2>Export Options</h2>';
+        echo '<h3>All Vehicles</h3>';
         $this->adminExportList();
     }
 
@@ -130,7 +127,7 @@ class PageExport extends Page
         $escaped = str_replace('"', '""', $value);
 
         // If the value contains a comma, newline or double quote, enclose it in double quotes
-        if (strpos($escaped, ',') !== false || strpos($escaped, "\n") !== false || strpos($escaped, '"') !== false) {
+        if (strpos($escaped, ',') !== false or strpos($escaped, "\n") !== false or strpos($escaped, '"') !== false) {
             $escaped = '"' . $escaped . '"';
         }
 

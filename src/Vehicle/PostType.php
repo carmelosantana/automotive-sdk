@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle;
+namespace WipyAutos\AutomotiveSdk\Vehicle;
 
 class PostType
 {
@@ -13,10 +13,11 @@ class PostType
         add_action('init', [$this, 'registerTaxonomies']);
     }
 
-    // Register post type
-    public function registerPostType()
+    /**
+     * Register post type for vehicles
+     */
+    public function registerPostType(): void
     {
-        // labels to change all "Post(s)" to "Vehicle(s)"
         $labels = [
             'name' => __('Vehicles'),
             'singular_name' => __('Vehicle'),
@@ -54,42 +55,26 @@ class PostType
             'has_archive' => true,
             'rewrite' => ['slug' => 'vehicles'],
             'show_in_rest' => true,
+            'show_in_graphql' => true,
             'supports' => ['title', 'editor', 'thumbnail'],
             'menu_icon' => 'dashicons-car',
-            'taxonomies' => ['make', 'model', 'trim', 'year', 'special'],
-            'menu_position' => 52,
+            'taxonomies' => array_column(Fields::getTaxonomies(), 'name'),
+            'menu_position' => 55,
         ]);
     }
 
-    // Register taxonomies
-    public function registerTaxonomies()
+    /**
+     * Register taxonomies for vehicles
+     */
+    public function registerTaxonomies(): void
     {
-        // Add custom taxonomy
-        register_taxonomy('make', 'vehicle', [
-            'label' => __('Make'),
-            'rewrite' => ['slug' => 'makes'],
-            'hierarchical' => true,
-        ]);
-
-        // Add custom taxonomy
-        register_taxonomy('model', 'vehicle', [
-            'label' => __('Model'),
-            'rewrite' => ['slug' => 'models'],
-            'hierarchical' => true,
-        ]);
-
-        // Trim
-        register_taxonomy('trim', 'vehicle', [
-            'label' => __('Trim'),
-            'rewrite' => ['slug' => 'trims'],
-            'hierarchical' => true,
-        ]);
-
-        // Add custom taxonomy
-        register_taxonomy('year', 'vehicle', [
-            'label' => __('Year'),
-            'rewrite' => ['slug' => 'years'],
-            'hierarchical' => true,
-        ]);
+        foreach (Fields::getTaxonomies() as $taxonomy) {
+            register_taxonomy($taxonomy['name'], 'vehicle', [
+                'label' => __($taxonomy['label']),
+                'rewrite' => ['slug' => $taxonomy['slug']],
+                'hierarchical' => $taxonomy['hierarchical'],
+                'show_in_rest' => true,
+            ]);
+        }
     }
 }

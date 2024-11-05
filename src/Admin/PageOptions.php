@@ -2,87 +2,170 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
+
+use WipyAutos\AutomotiveSdk\Options;
 
 class PageOptions extends Page
 {
     protected $page_slug = 'options';
     protected $page_title = 'Options';
     protected $menu_title = 'Options';
-    protected $page_description = 'Manage settings and options for the plugin.';
+    protected $sub_menu_position = 15;
 
-    // Define the tabs
-    protected $tabs = [
-        'general' => 'General',
-        'advanced' => 'Advanced',
-        'display' => 'Display'
+    protected $tab_actions = [
+        'dealer' => 'Dealer',
+        'legal' => 'Legal',
+        'output' => 'Output',
+        'cache' => 'Cache',
+        'license' => 'License',
     ];
 
     public function __construct()
     {
         parent::__construct();
+        add_action('admin_init', [$this, 'registerSettings']);
     }
 
     public function adminContent(): void
     {
-        $current_tab = $_GET['tab'] ?? 'general';
-        echo '<h2 class="nav-tab-wrapper">';
-        foreach ($this->tabs as $tab_key => $tab_label) {
-            $active_class = ($current_tab === $tab_key) ? 'nav-tab-active' : '';
-            echo '<a href="' . esc_url($this->generatePageUrl('', ['tab' => $tab_key])) . '" class="nav-tab ' . esc_attr($active_class) . '">' . esc_html($tab_label) . '</a>';
-        }
-        echo '</h2>';
-
-        $this->renderTabContent($current_tab);
-    }
-
-    /**
-     * Renders the content for the current tab.
-     *
-     * @param string $tab The current tab.
-     */
-    protected function renderTabContent(string $tab): void
-    {
-        switch ($tab) {
-            case 'general':
-                $this->renderGeneralTab();
-                break;
-            case 'advanced':
-                $this->renderAdvancedTab();
-                break;
-            case 'display':
-                $this->renderDisplayTab();
-                break;
+        switch ($this->current_tab) {
             default:
-                $this->renderGeneralTab();
+                $this->renderOptions();
                 break;
         }
     }
 
     /**
-     * Render the General tab content.
+     * Registers the settings fields in WordPress.
      */
-    protected function renderGeneralTab(): void
+    public function registerSettings(): void
     {
-        echo '<h3>General Settings</h3>';
-        echo '<p>General settings go here.</p>';
+        $fields = $this->defineFields();
+
+        foreach ($fields as $section => $data) {
+            if ($this->current_tab !== $section) {
+                continue;
+            }
+
+            add_settings_section(
+                "automotivesdk_{$section}_section",
+                $data['section_title'],
+                null,
+                'automotivesdk-options'
+            );
+
+            foreach ($data['fields'] as $field) {
+                add_settings_field(
+                    $field['name'],
+                    $field['label'],
+                    [$this, 'renderField'],
+                    'automotivesdk-options',
+                    "automotivesdk_{$section}_section",
+                    $field
+                );
+
+                // Ensure the settings are registered under the correct options group
+                register_setting('automotivesdk_options', $field['name']);
+            }
+        }
     }
 
     /**
-     * Render the Advanced tab content.
+     * Defines the fields for the settings page.
+     *
+     * @return array An array of field definitions.
      */
-    protected function renderAdvancedTab(): void
+    protected function defineFields(): array
     {
-        echo '<h3>Advanced Settings</h3>';
-        echo '<p>Advanced settings go here.</p>';
+        return Options::get();
     }
 
     /**
-     * Render the Display tab content.
+     * Renders the input fields for the settings page.
+     *
+     * @param array $field The field definition.
      */
-    protected function renderDisplayTab(): void
+    public function renderField(array $field): void
     {
-        echo '<h3>Display Settings</h3>';
-        echo '<p>Display settings go here.</p>';
+        $value = get_option($field['name'], '');
+
+        switch ($field['type']) {
+            case 'checkbox':
+                echo '<input type="checkbox" name="' . esc_attr($field['name']) . '" value="1" ' . checked($value, '1', false) . ' />';
+                break;
+
+            case 'post_checkbox':
+                $args = [
+                    'post_type' => $field['post_type'],
+                    'posts_per_page' => -1,
+                ];
+                $posts = get_posts($args);
+
+                foreach ($posts as $post) {
+                    $meta_key = $field['name'] . '_' . $post->ID;
+                    $meta_value = get_option($meta_key, '');
+                    echo '<input type="checkbox" name="' . esc_attr($meta_key) . '" value="1" ' . checked($meta_value, '1', false) . ' /> ' . esc_html($post->post_title) . '<br>';
+                }
+                break;
+
+            case 'nonce':
+                wp_nonce_field($field['name'], $field['name']);
+                break;
+
+            case 'number':
+                echo '<input type="number" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+
+            case 'select':
+                echo '<select name="' . esc_attr($field['name']) . '">';
+                foreach ($field['options'] as $option_value => $option_label) {
+                    echo '<option value="' . esc_attr($option_value) . '" ' . selected($value, $option_value, false) . '>' . esc_html($option_label) . '</option>';
+                }
+                echo '</select>';
+                break;
+
+            case 'submit':
+                echo '<input type="submit" name="' . esc_attr($field['name']) . '" value="' . esc_attr($field['label']) . '" />';
+                break;
+
+            case 'post_select':
+                $args = [
+                    'post_type' => $field['post_type'],
+                    'posts_per_page' => -1,
+                ];
+                $posts = get_posts($args);
+
+                echo '<select name="' . esc_attr($field['name']) . '">';
+                echo '<option value="">Select a post</option>';
+                foreach ($posts as $post) {
+                    echo '<option value="' . esc_attr($post->ID) . '" ' . selected($value, $post->ID, false) . '>' . esc_html($post->post_title) . '</option>';
+                }
+                echo '</select>';
+                break;
+            case 'text':
+                echo '<input type="text" name="' . esc_attr($field['name']) . '" value="' . esc_attr($value) . '" />';
+                break;
+            case 'textarea':
+                echo '<textarea name="' . esc_attr($field['name']) . '">' . esc_textarea($value) . '</textarea>';
+                break;
+        }
+    }
+
+    /**
+     * Renders the options form.
+     */
+    protected function renderOptions(): void
+    {
+?>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('automotivesdk_options');
+            do_settings_sections('automotivesdk-options');
+            echo '<input type="hidden" name="tab" value="' . esc_attr($_GET['tab'] ?? '') . '" />';
+            submit_button();
+            ?>
+        </form>
+<?php
     }
 }

@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Admin\File;
-use WpAutos\AutomotiveSdk\Admin\Files;
-use WpAutos\AutomotiveSdk\Import\Csv;
-use WpAutos\AutomotiveSdk\Import\Mapping;
+use WipyAutos\AutomotiveSdk\Admin\File;
+use WipyAutos\AutomotiveSdk\Admin\Files;
+use WipyAutos\AutomotiveSdk\Import\Csv;
+use WipyAutos\AutomotiveSdk\Import\Mapping;
 
 class PageImport extends Page
 {
     protected $page_slug = 'import';
     protected $page_title = 'Import';
     protected $menu_title = 'Import';
-    protected $page_description = 'Utilities for interacting with multiple vehicle datasets.';
-    protected $page_actions = [
-        ['page' => 'import', 'description' => 'Import'],
-        ['page' => 'debug', 'description' => 'Debug'],
+    protected $page_description = 'Utilities for interacting with multiple vehicle datasets. Files uploaded to your media library are filtered and listed below.';
+    protected $sub_menu_position = 5;
+
+    protected $tab_actions = [
+        'import' => 'Import',
+        'tools' => 'Tools',
     ];
 
     public $actions_separator = ' • ';
@@ -60,8 +62,19 @@ class PageImport extends Page
         }
 
         $file = $_REQUEST['file'] ?? null;
+        $profile = $_REQUEST['profile'] ?? 'universal'; // Default to universal if no profile is provided
+
         $import = new Csv();
         $import->setFile($file);
+
+        // Fetch mapping based on profile
+        if (is_numeric($profile)) {
+            $mapping = (new Mapping())->getMapping((int)$profile);
+        } else {
+            $mapping = Mapping::universalMapping();
+        }
+
+        $import->setMapping($mapping); // Apply the mapping to the import process
 
         wp_send_json_success(['total' => $this->file->getTotalRows()]);
     }
@@ -79,29 +92,49 @@ class PageImport extends Page
 
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
         $limit = isset($_POST['limit']) ? intval($_POST['limit']) : 10;
+        $profile = $_REQUEST['profile'] ?? 'universal';
 
         $import = new Csv();
         $import->setFile($_REQUEST['file']);
-        $results = $import->fileImportBatch($offset, $limit);
 
+        // Fetch mapping based on profile
+        if (is_numeric($profile)) {
+            $mapping = (new Mapping())->getMapping((int)$profile);
+        } else {
+            $mapping = Mapping::universalMapping();
+        }
+
+        $import->setMapping($mapping); // Apply the mapping to the import process
+
+        $results = $import->fileImport($offset, $limit);
         wp_send_json_success($results);
     }
 
     public function adminContent(): void
     {
+        // switch tabs
+        switch ($this->current_tab) {
+            case 'tools':
+                $tools = new PageImportTools();
+                $tools->adminContent();
+                break;
+
+            default:
+                $this->doAction();
+                break;
+        }
+    }
+
+    public function doAction()
+    {
         switch ($_GET['action'] ?? null) {
-            case 'import':
-                $this->adminFileImport();
-                $this->adminPossibleFileList();
-                break;
-
-            case 'template':
-                $this->adminFileHeader();
-                $this->adminFileInfo();
-                break;
-
             case 'preview':
+                $this->adminFileHeader();
                 $this->adminFileView();
+                break;
+
+            case 'header':
+                $this->adminFileInfo();
                 break;
 
             default:
@@ -149,7 +182,37 @@ class PageImport extends Page
             return;
         }
 
-        echo '<h3 class="wp-heading-inline">File Info</h3>';
+        $file = $_GET['file'] ?? null;
+        $file = sanitize_text_field($file);
+
+        echo '<h3>' . esc_html($this->file->getFileName());
+
+        // make-mapping
+        $custom_url = add_query_arg([
+            'post_type' => 'import-profile',
+            'file' => $file,
+        ], admin_url('post-new.php'));
+
+
+        $import_profiles = get_posts([
+            'post_type' => 'import-profile',
+            'posts_per_page' => -1,
+        ]);
+
+        echo ' <select name="import_profile" id="import_profile">';
+        echo '<option value="">Select Import Profile</option>';
+        echo '<optgroup label="System">';
+        echo '<option value="universal">Universal</option>';
+        echo '<optgroup label="Posts">';
+        foreach ($import_profiles as $profile) {
+            echo '<option value="' . $profile->ID . '">' . $profile->post_title . '</option>';
+        }
+        echo '</optgroup>';
+        echo '</select>';
+
+        echo ' <a href="#" class="start-import-link button-primary" data-file="' . esc_attr($file) . '" data-nonce="' . wp_create_nonce('vehicle_import_nonce') . '">Import</a>';
+        echo ' <a href="' . esc_url($custom_url) . '" class="button">Make Mapping</a>';
+        echo '</h3>';
 
         echo '<pre>';
         echo 'Header Hash: ' . $this->file->getHeaderHash() . PHP_EOL;
@@ -277,11 +340,7 @@ class PageImport extends Page
         // Remove 1 for header row
         $total_items--;
 
-        $total_pages = ceil($total_items / $per_page);
-
-        echo '<h3>' . esc_html($this->file->getFileName());
-        echo ' <a href="#" class="start-import-link button-primary" data-file="' . esc_attr($_GET['file']) . '" data-nonce="' . wp_create_nonce('vehicle_import_nonce') . '">Import</a>';
-        echo '</h3>';
+        $this->renderPagination($total_items, $per_page, $current_page, $file_data);
 
         echo '<div class="scrollwrapper">';
         echo '<table class="wp-list-table widefat fixed striped" style="width: auto;">';
@@ -308,37 +367,25 @@ class PageImport extends Page
         echo '</tbody></table>';
         echo '</div>';
 
+        $this->renderPagination($total_items, $per_page, $current_page, $file_data);
+    }
+
+    public function renderPagination($total_items, $per_page, $current_page, $file_data = []): void
+    {
+        $total_pages = ceil($total_items / $per_page);
+
         if ($total_items === (count($file_data) - 1)) {
-            echo '<p>Total: ' . esc_html($total_items) . '</p>';
+            echo '<p>Displaying ' . esc_html($total_items) . ' rows.</p>';
         } else {
-            echo '<p>✔︎ Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
+            echo '<p>Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
+
             echo paginate_links([
-                'base' => $this->generatePageUrl('', ['action' => 'view', 'file' => $_GET['file']]),
+                'base' => $this->generatePageUrl('', ['action' => 'import', 'file' => $_GET['file']]),
                 'format' => '&paged=%#%',
                 'current' => $current_page,
                 'total' => $total_pages,
             ]);
-            echo '<p>Displaying ' . count($file_data) . ' of ' . esc_html($total_items) . ' rows.</p>';
         }
-    }
-
-    public function adminHeader(): void
-    {
-        echo '<div class="wp-autos wrap">';
-        echo '<h1 class="wp-heading-inline">' . esc_html($this->page_title);
-        echo '</h1>';
-
-        $this->adminCounts();
-
-        $this->adminProgress();
-
-        if (!empty($this->page_description)) {
-            echo '<p>' . esc_html($this->page_description) . '</p>';
-        }
-
-        $this->adminActionsList();
-
-        echo '<hr class="wp-header-end">';
     }
 
     // output inline js
@@ -383,12 +430,17 @@ class PageImport extends Page
         echo '</thead><tbody>';
 
         $row_actions = [
-            'template' => [
-                'description' => 'Template',
-            ],
             'preview' => [
-                'description' => 'Preview',
-            ]
+                'label' => 'Import',
+            ],
+            'header' => [
+                'label' => 'Header',
+            ],
+            'make-mapping' => [
+                'label' => 'Make Mapping',
+                'url' => 'post-new.php',
+                'post_type' => 'import-profile',  // Adjusted to point to the correct post type
+            ],
         ];
 
         foreach ($this->Files->getAll() as $key => $file) {
@@ -400,17 +452,30 @@ class PageImport extends Page
             echo '<div class="row-actions">';
 
             // Generate the import link
+            $row = '';
             $nonce = wp_create_nonce('vehicle_import_nonce');
-            $import_link = '<a href="#" class="start-import-link" data-file="' . esc_attr($key) . '" data-nonce="' . esc_attr($nonce) . '">Import</a> | ';
-
-            $row = $import_link;
+            // $import_link = '<a href="#" class="start-import-link" data-file="' . esc_attr($key) . '" data-nonce="' . esc_attr($nonce) . '">Import</a> | ';
+            // $row = $import_link;
             foreach ($row_actions as $action => $data) {
                 $args = [
                     'action' => $action,
-                    'file' => $key,
-                    'nonce' => wp_create_nonce($action . $key)
+                    'file' => $key,  // Pass the file hash as a query parameter
+                    'nonce' => wp_create_nonce($action . $key),
                 ];
-                $row .= '<a href="' . esc_url($this->generatePageUrl('import', $args)) . '" class="' . esc_attr($data['class']) . '">' . esc_html($data['description']) . '</a> | ';
+
+                // Check if the 'url' key is set, use the provided URL
+                if (isset($data['url'])) {
+                    // Use the provided URL and append necessary query parameters like the file hash
+                    $custom_url = add_query_arg([
+                        'post_type' => $data['post_type'] ?? '',  // Ensure post_type is set if needed
+                        'file' => $key,  // File hash
+                    ], admin_url($data['url']));
+
+                    $row .= '<a href="' . esc_url($custom_url) . '" class="' . esc_attr($data['class'] ?? '') . '">' . esc_html($data['label']) . '</a> | ';
+                } else {
+                    // Fallback to the default URL generation if no custom URL is set
+                    $row .= '<a href="' . esc_url($this->generateTabUrl('import', $args)) . '" class="' . esc_attr($data['class'] ?? '') . '">' . esc_html($data['label']) . '</a> | ';
+                }
             }
             $row = rtrim($row, ' | ');
             echo $row;

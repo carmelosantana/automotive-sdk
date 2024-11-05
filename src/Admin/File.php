@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Import\Mapping;
+use WipyAutos\AutomotiveSdk\Import\Mapping;
 
 /**
  * Handles the loading and processing of file data including headers and templates.
@@ -149,7 +149,8 @@ class File
      */
     public function getTotalRows(): ?int
     {
-        return $this->file_data ? count($this->file_data) : null;
+        // Subtract 1 to account for the header row
+        return $this->file_data ? count($this->file_data) - 1 : null;
     }
 
     /**

@@ -2,15 +2,21 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle;
+namespace WipyAutos\AutomotiveSdk\Vehicle;
 
 class Fields
 {
-    public static function get()
+    /**
+     * Get a structured array of meta fields in sections.
+     * Used for registering and referencing meta fields for the vehicle post type.
+     *
+     * @return array
+     */
+    public static function getMetas()
     {
         return [
             'specifications' => [
-                'description' => __('Details for this particular vehicle.', 'alpaca-bot'),
+                'description' => __('Details for this particular vehicle.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'vin',
@@ -21,31 +27,6 @@ class Fields
                         'name' => 'stock_number',
                         'type' => 'text',
                         'label' => 'Stock Number'
-                    ],
-                    [
-                        'name' => 'year',
-                        'type' => 'text',
-                        'label' => 'Year'
-                    ],
-                    [
-                        'name' => 'make',
-                        'type' => 'text',
-                        'label' => 'Make'
-                    ],
-                    [
-                        'name' => 'model',
-                        'type' => 'text',
-                        'label' => 'Model'
-                    ],
-                    [
-                        'name' => 'trim',
-                        'type' => 'text',
-                        'label' => 'Trim'
-                    ],
-                    [
-                        'name' => 'body',
-                        'type' => 'text',
-                        'label' => 'Body'
                     ],
                     [
                         'name' => 'mileage',
@@ -100,7 +81,7 @@ class Fields
                 ],
             ],
             'price' => [
-                'description' => __('Pricing, MSRP, financing.', 'alpaca-bot'),
+                'description' => __('Pricing, MSRP, financing.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'internet_price',
@@ -135,12 +116,13 @@ class Fields
                 ],
             ],
             'media' => [
-                'description' => __('Images, videos, and other media.', 'alpaca-bot'),
+                'description' => __('Images, videos, and other media.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'photo_urls',
                         'type' => 'textarea',
-                        'label' => 'Photo URLs'
+                        'label' => 'Photo URLs',
+                        'data_type' => 'array'
                     ],
                     [
                         'name' => 'video_url',
@@ -150,7 +132,7 @@ class Fields
                 ],
             ],
             'rooftop' => [
-                'description' => __('Dealership location details, URL, and contact information.', 'alpaca-bot'),
+                'description' => __('Dealership location details, URL, and contact information.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'dealer_name',
@@ -185,7 +167,7 @@ class Fields
                 ],
             ],
             'warranty' => [
-                'description' => __('Warranty information for the vehicle.', 'alpaca-bot'),
+                'description' => __('Warranty information for the vehicle.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'certified',
@@ -210,7 +192,7 @@ class Fields
                 ],
             ],
             'additional_info' => [
-                'description' => __('Additional information about the vehicle.', 'alpaca-bot'),
+                'description' => __('Additional information about the vehicle.', 'automotive-sdk'),
                 'fields' => [
                     [
                         'name' => 'internet_special',
@@ -230,7 +212,8 @@ class Fields
                     [
                         'name' => 'options',
                         'type' => 'textarea',
-                        'label' => 'Options'
+                        'label' => 'Options',
+                        'data_type' => 'array'
                     ],
                     [
                         'name' => 'fuel_economy_city',
@@ -270,5 +253,69 @@ class Fields
                 ],
             ],
         ];
+    }
+
+    public static function getMetasFlat(): array
+    {
+        $fields = self::getMetas();
+        $flat_fields = [];
+        foreach ($fields as $section) {
+            $flat_fields = array_merge($flat_fields, $section['fields']);
+        }
+        return $flat_fields;
+    }
+
+    /**
+     * Get a structured array of taxonomies.
+     * Used for registering and referencing taxonomies for the vehicle post type.
+     *
+     * @return array
+     */
+    public static function getTaxonomies(): array
+    {
+        return [
+            [
+                'name' => 'year',
+                'slug' => 'years',
+                'label' => 'Year',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'make',
+                'slug' => 'makes',
+                'label' => 'Make',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'model',
+                'slug' => 'models',
+                'label' => 'Model',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'trim',
+                'slug' => 'trims',
+                'label' => 'Trim',
+                'hierarchical' => false,
+            ],
+            [
+                'name' => 'body',
+                'slug' => 'bodies',
+                'label' => 'Body',
+                'hierarchical' => false,
+            ],
+        ];
+    }
+
+    /**
+     * Get the names of the taxonomies.
+     *
+     * @return array
+     */
+    public static function getTaxonomiesNames(): array
+    {
+        return array_map(function ($taxonomy) {
+            return $taxonomy['name'];
+        }, self::getTaxonomies());
     }
 }

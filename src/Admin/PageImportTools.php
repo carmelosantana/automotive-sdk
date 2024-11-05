@@ -2,20 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
 class PageImportTools extends PageImport
 {
-    protected $page_slug = 'debug';
-    protected $page_title = 'Debug';
-    protected $menu_title = '↳ Debug';
-    protected $page_description = 'Delete all vehicles, refresh files, check headers.';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function adminContent(): void
     {
         $this->adminDebugTools();
@@ -23,22 +13,65 @@ class PageImportTools extends PageImport
         $this->adminFilesGetHeaders();
     }
 
-    public function adminDebugTools()
+    public function adminDebugTools(): void
     {
         $actions = [
-            'delete_all_vehicles' => 'Delete All Vehicles',
-            'refresh_files' => 'Refresh Files',
+            [
+                'description' => 'Deletes all vehicles.',
+                'label' => 'Delete All Vehicles',
+                'buttons' => [
+                    [
+                        'label' => 'Delete All Vehicles',
+                        'tab' => 'import',
+                        'args' => [
+                            'tool' => 'delete_all_vehicles',
+                        ],
+                        'confirm' => 'Are you sure you want to delete all vehicles?'
+                    ]
+                ]
+            ],
+            [
+                'description' => 'Refreshes the file library.',
+                'label' => 'Refresh Files',
+                'buttons' => [
+                    [
+                        'label' => 'Refresh Files',
+                        'tab' => 'import',
+                        'args' => [
+                            'tool' => 'refresh_files',
+                        ]
+                    ]
+                ]
+            ],
         ];
 
-        $out = '<div>';
+        echo '<table class="wp-list-table widefat fixed striped" style="width: 100%;">';
+        echo '<thead>';
+        echo '<tr>';
+        echo '<th>Description</th>';
+        echo '<th>Action</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
 
-        foreach ($actions as $action => $description) {
-            $out .= '<a href="' . admin_url('admin.php?page=' . $this->generatePageSlug() . '&tool=' . $action) . '" class="button">' . $description . '</a> ';
+        // Generate rows for each action
+        foreach ($actions as $action) {
+            echo '<tr>';
+            echo '<td>' . esc_html($action['description']) . '</td>';
+            echo '<td>';
+            foreach ($action['buttons'] as $button) {
+                // echo ' <a href="' . esc_url($this->generateTabUrl('tools', $button['args'])) . '" class="button">' . esc_html($button['label'] ?? 'Run') . '</a>';
+                if (isset($button['confirm'])) {
+                    echo ' <a href="' . esc_url($this->generateTabUrl('tools', $button['args'])) . '" class="button" onclick="return confirm(\'' . esc_js($button['confirm']) . '\');">' . esc_html($button['label'] ?? 'Run') . '</a>';
+                } else {
+                    echo ' <a href="' . esc_url($this->generateTabUrl('tools', $button['args'])) . '" class="button">' . esc_html($button['label'] ?? 'Run') . '</a>';
+                }
+            }
+            echo '</td>';
+            echo '</tr>';
         }
 
-        $out .= '</div>';
-
-        echo $out;
+        echo '</tbody></table>';
     }
 
     public function adminRunTools()

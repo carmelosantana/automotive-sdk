@@ -63,3 +63,8 @@
     padding: 2px 0;
     transition: width 0.33s ease;
 }
+
+#import_profile_mapping input.small {
+    margin-top: .5em;
+    margin-right: .5em;
+}

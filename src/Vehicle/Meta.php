@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle;
+namespace WipyAutos\AutomotiveSdk\Vehicle;
 
 class Meta
 {
@@ -34,56 +34,22 @@ class Meta
         return $columns;
     }
 
-    // Can take a key and format the value to an acceptable output
-    // Example, vauto pricing comes in as USD23450 but we need to display $23,450
-    public function formatValue($key, $value)
-    {
-        switch ($key) {
-            case 'price':
-            case 'sale_price':
-                if (!is_numeric($value) and !empty($value)) {
-                    // remove all numeric characters and add to $currency
-                    $currency = preg_replace('/[0-9]/', '', $value);
-
-                    switch ($currency) {
-                        default:
-                            $currency = 'USD';
-                            break;
-                    }
-                    $value = preg_replace('/[^0-9]/', '', $value);
-
-                    // $money = Money::of($value, $currency);
-                    // $money = $money->formatTo('en_US');
-                    return $money;
-                }
-            default:
-                return $value;
-        }
-    }
-
     // Add content to custom columns
     public function addColumnsContent($column, $post_id)
     {
         switch ($column) {
-                // taxonomies, not meta
+                // tax
             case 'make':
-                echo get_the_term_list($post_id, 'make', '', ', ', '');
-                break;
             case 'model':
-                echo get_the_term_list($post_id, 'model', '', ', ', '');
-                break;
             case 'year':
-                echo get_the_term_list($post_id, 'year', '', ', ', '');
+                echo get_the_term_list($post_id, $column, '', ', ', '');
                 break;
-                # meta
+
+                // meta
             case 'price':
-                echo $this->formatValue('price', get_post_meta($post_id, 'price', true));
-                break;
             case 'sale_price':
-                echo $this->formatValue('sale_price', get_post_meta($post_id, 'sale_price', true));
-                break;
             case 'vin':
-                echo get_post_meta($post_id, 'vin', true);
+                echo get_post_meta($post_id, $column, true);
                 break;
         }
     }
@@ -91,7 +57,7 @@ class Meta
     // Add vehicle meta search to edit.php search
     public function addMetaSearch($query)
     {
-        if (!is_admin() || !$query->is_main_query()) {
+        if (!is_admin() or !$query->is_main_query()) {
             return;
         }
 
@@ -127,7 +93,7 @@ class Meta
     // Sort columns
     public function sortColumns($query)
     {
-        if (!is_admin() || !$query->is_main_query()) {
+        if (!is_admin() or !$query->is_main_query()) {
             return;
         }
 
@@ -169,24 +135,15 @@ class Meta
     // display custom meta boxes for custom post type item
     public function metaboxRegister()
     {
-        // add_meta_box(
-        //     'vehicle_meta_box',
-        //     'Vehicle Details',
-        //     [$this, 'metaboxDisplay'],
-        //     $this->slug,
-        //     'advanced',
-        //     'high'
-        // );
-
         // add meta box per section
-        $fields = Fields::get();
+        $fields = Fields::getMetas();
         foreach ($fields as $section => $field) {
             add_meta_box(
                 'vehicle_meta_box_' . $section,
                 $field['description'],
                 // use a display function that takes the section as an argument
                 function ($post) use ($section) {
-                    $fields = Fields::get()[$section]['fields'];
+                    $fields = Fields::getMetas()[$section]['fields'];
                     $meta = get_post_meta($post->ID);
 
                     foreach ($fields as $field) {
@@ -194,10 +151,19 @@ class Meta
                         $label = $field['label'];
                         $type = $field['type'];
                         $name = $field['name'];
+                        $data_type = $field['data_type'] ?? '';
 
                         // label on the left, input on the right
                         echo '<div style="display: flex; margin-bottom: 1rem;">';
                         echo '<label style="width: 200px;">' . $label . '</label>';
+
+                        // prepare the data type
+                        switch ($data_type) {
+                            case 'array':
+                                $value = maybe_unserialize($value);
+                                $value = implode("\n", $value);
+                                break;
+                        }
 
                         // use switch for different input types
                         switch ($type) {
@@ -226,13 +192,24 @@ class Meta
     // save custom meta box
     public function metaboxSave($post_id)
     {
-        $fields = Fields::get();
+        $fields = Fields::getMetas();
 
         foreach ($fields as $section => $field) {
             foreach ($field['fields'] as $field) {
                 $name = $field['name'];
                 if (isset($_POST[$name])) {
-                    update_post_meta($post_id, $name, sanitize_text_field($_POST[$name]));
+                    switch ($field['data_type'] ?? $field['type']) {
+                        case 'array':
+                            $value = explode("\n", sanitize_textarea_field($_POST[$name]));
+                            $value = array_filter($value);
+                            $value = array_map('trim', $value);
+                            update_post_meta($post_id, $name, $value);
+                            break;
+
+                        default:
+                            update_post_meta($post_id, $name, sanitize_text_field($_POST[$name]));
+                            break;
+                    }
                 }
             }
         }

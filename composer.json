@@ -1,6 +1,6 @@
 {
-    "name": "wpautos/automotive-sdk",
-    "version": "0.1.3",
+    "name": "wipyautos/automotive-sdk",
+    "version": "0.1.5",
     "description": "Full stack automotive SDK for WordPress.",
     "type": "wordpress-plugin",
     "license": "GNU General Public License v2",
@@ -12,20 +12,15 @@
     ],
     "autoload": {
         "psr-4": {
-            "WpAutos\\AutomotiveSdk\\": "src/"
+            "WipyAutos\\AutomotiveSdk\\": "src/"
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/carmelosantana/wp-options"
-        }
-    ],    
     "require": {
         "php": "^8.1",
         "composer/installers": "^2.2",
         "brick/money": "^0.9.0",
-        "mustache/mustache": "^2.14"
+        "mustache/mustache": "^2.14",
+        "erusev/parsedown": "^1.7"
     },
     "config": {
         "allow-plugins": {
@@ -33,10 +28,14 @@
         }
     },
     "require-dev": {
-        "carmelosantana/ai-context-builder": "^1.1"
+        "carmelosantana/ai-context-builder": "^1.4",
+        "carmelosantana/release-bento": "^0.1.1"
     },
     "scripts": {
         "ai": "CarmeloSantana\\AiContextBuilder\\ContextBuilder::generateContext",
+        "bento": [
+            "CarmeloSantana\\ReleaseBento\\Package::build"
+        ],
         "test": "pest tests/"
     }
 }
