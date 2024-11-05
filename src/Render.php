@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk;
+namespace WipyAutos\AutomotiveSdk;
 
 use Brick\Money\Money;
 use Mustache_Engine;
-use WpAutos\AutomotiveSdk\Vehicle\Fields;
+use WipyAutos\AutomotiveSdk\Vehicle\Fields;
 
 /**
  * Class Render

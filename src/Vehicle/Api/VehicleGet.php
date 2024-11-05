@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Vehicle\Api;
+namespace WipyAutos\AutomotiveSdk\Vehicle\Api;
 
 class VehicleGet extends VehicleRestBase
 {

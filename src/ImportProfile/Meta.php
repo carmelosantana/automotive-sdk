@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\ImportProfile;
+namespace WipyAutos\AutomotiveSdk\ImportProfile;
 
-use WpAutos\AutomotiveSdk\Admin\Files;
-use WpAutos\AutomotiveSdk\Import\Mapping;
-use WpAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
+use WipyAutos\AutomotiveSdk\Admin\Files;
+use WipyAutos\AutomotiveSdk\Import\Mapping;
+use WipyAutos\AutomotiveSdk\Vehicle\Fields as VehicleFields;
 
 class Meta
 {
@@ -100,7 +100,7 @@ class Meta
         $taxonomy_mapping = get_post_meta($post->ID, '_csv_taxonomy_mapping', true) ?: [];
 
         // Get the taxonomies dynamically from the Fields class
-        $taxonomies = \WpAutos\AutomotiveSdk\Vehicle\Fields::getTaxonomies();
+        $taxonomies = \WipyAutos\AutomotiveSdk\Vehicle\Fields::getTaxonomies();
 
     ?>
         <table class="form-table">
@@ -263,7 +263,7 @@ class Meta
         $headers_by_file = [];
 
         foreach ($files as $file_hash) {
-            $file = new \WpAutos\AutomotiveSdk\Admin\File();
+            $file = new \WipyAutos\AutomotiveSdk\Admin\File();
             $file->load($file_hash);  // Load the file using its hash
 
             if ($file->isLoaded()) {

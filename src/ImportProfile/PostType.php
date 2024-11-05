@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\ImportProfile;
+namespace WipyAutos\AutomotiveSdk\ImportProfile;
 
 class PostType
 {

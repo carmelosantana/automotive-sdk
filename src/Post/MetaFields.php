@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Post;
+namespace WipyAutos\AutomotiveSdk\Post;
 
 class MetaFields
 {

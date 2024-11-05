@@ -1,5 +1,5 @@
 {
-    "name": "wpautos/automotive-sdk",
+    "name": "wipyautos/automotive-sdk",
     "version": "0.1.5",
     "description": "Full stack automotive SDK for WordPress.",
     "type": "wordpress-plugin",
@@ -12,7 +12,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "WpAutos\\AutomotiveSdk\\": "src/"
+            "WipyAutos\\AutomotiveSdk\\": "src/"
         }
     },
     "require": {

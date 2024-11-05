@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk\Admin;
+namespace WipyAutos\AutomotiveSdk\Admin;
 
-use WpAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
+use WipyAutos\AutomotiveSdk\Vehicle\Data as VehicleData;
 
 class PageDashboard extends Page
 {

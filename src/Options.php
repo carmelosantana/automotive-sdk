@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WpAutos\AutomotiveSdk;
+namespace WipyAutos\AutomotiveSdk;
 
 class Options
 {
@@ -62,7 +62,7 @@ class Options
                         'name' => 'disclaimer_default',
                         'type' => 'textarea',
                         'label' => __('Default disclaimer on any non vehicle specific page.', 'automotive-sdk'),
-                    ],                    
+                    ],
                     [
                         'name' => 'disclaimer_new',
                         'type' => 'textarea',
@@ -75,13 +75,68 @@ class Options
                     ],
                 ],
             ],
+            'output' => [
+                'section_title' => __('Output Settings', 'automotive-sdk'),
+                'fields' => [
+                    [
+                        'name' => 'output_currency',
+                        'type' => 'text',
+                        'label' => __('Currency Symbol', 'automotive-sdk'),
+                    ],
+                    [
+                        'name' => 'output_currency_position',
+                        'type' => 'select',
+                        'label' => __('Currency Position', 'automotive-sdk'),
+                        'options' => [
+                            'before' => __('Before Price', 'automotive-sdk'),
+                            'after' => __('After Price', 'automotive-sdk'),
+                        ],
+                    ],
+                    [
+                        'name' => 'juice_query_homepage',
+                        'type' => 'post_select',
+                        'label' => __('Juice Query Homepage', 'automotive-sdk'),
+                        'description' => __('Select a page to display the Juice Query search form.', 'automotive-sdk'),
+                        'post_type' => 'juiceq'
+                    ],
+                ],
+            ],
+            'cache' => [
+                'section_title' => __('Cache Settings', 'automotive-sdk'),
+                'fields' => [
+                    [
+                        'name' => 'cache_enabled',
+                        'type' => 'checkbox',
+                        'label' => __('Enable Cache', 'automotive-sdk'),
+                    ],
+                    [
+                        'name' => 'cache_duration_html',
+                        'type' => 'number',
+                        'label' => __('Cache Duration (in seconds)', 'automotive-sdk'),
+                    ],
+                    [
+                        'name' => 'cache_duration_api',
+                        'type' => 'number',
+                        'label' => __('Cache Duration for API (in seconds)', 'automotive-sdk'),
+                    ],
+                ],
+            ],
             'license' => [
                 'section_title' => __('License Settings', 'automotive-sdk'),
                 'fields' => [
                     [
-                        'name' => 'license_key',
+                        'name' => 'license_automotive_sdk',
                         'type' => 'text',
                         'label' => __('License Key', 'automotive-sdk'),
+                    ],
+                    [
+                        'name' => 'edd_license_activate',
+                        'type' => 'submit',
+                        'label' => __('Activate License', 'automotive-sdk'),
+                    ],
+                    [
+                        'name' => 'asdk_edd_nonce',
+                        'type' => 'nonce',
                     ],
                 ],
             ],
